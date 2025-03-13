@@ -1,10 +1,32 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-regular-webfont.woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-medium-webfont.woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-semibold-webfont.woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -13,7 +35,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 215 25% 27%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -22,7 +44,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 197 37% 76%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -32,22 +54,15 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 0.8rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -96,6 +111,34 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-towel-light text-towel-dark font-[SF_Pro_Display];
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    @apply bg-towel-accent/60 text-towel-dark;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply backdrop-blur-lg bg-white/70 border border-white/20 shadow-lg;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+  
+  .nav-link {
+    @apply relative text-towel-gray font-medium transition-colors duration-200 hover:text-towel-dark after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-towel-accent after:transition-all hover:after:w-full;
+  }
+  
+  .premium-button {
+    @apply relative overflow-hidden bg-towel-dark text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-300 ease-out hover:shadow-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-towel-accent focus:ring-opacity-50 active:translate-y-0.5;
+  }
+  
+  .product-card {
+    @apply rounded-2xl overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl border border-transparent hover:border-towel-accent/20;
   }
 }
