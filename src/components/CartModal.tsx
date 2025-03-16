@@ -1,31 +1,24 @@
 
+import { useState } from 'react';
 import { X, ShoppingBag, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
 
 interface CartModalProps {
   isOpen: boolean;
   onClose: () => void;
+  cartItems: CartItem[];
+  removeFromCart: (id: string) => void;
 }
 
-// Mock cart items
-const cartItems = [
-  { 
-    id: '1', 
-    name: 'Ultra Soft Bath Towel', 
-    price: 29.99, 
-    quantity: 2,
-    image: 'https://images.unsplash.com/photo-1616627547584-bf28cee262db?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80',
-  },
-  { 
-    id: '2', 
-    name: 'Premium Hand Towel Set', 
-    price: 24.99, 
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1583845112203-29329902332e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80',
-  }
-];
-
-const CartModal = ({ isOpen, onClose }: CartModalProps) => {
+const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProps) => {
   // Calculate subtotal
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
@@ -102,6 +95,7 @@ const CartModal = ({ isOpen, onClose }: CartModalProps) => {
                           <button 
                             className="text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
                             aria-label="Remove item"
+                            onClick={() => removeFromCart(item.id)}
                           >
                             <Trash2 size={16} />
                           </button>

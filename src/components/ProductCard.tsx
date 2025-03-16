@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Heart, ShoppingCart, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from "sonner";
 
 interface ProductCardProps {
   id: string;
@@ -15,6 +16,19 @@ interface ProductCardProps {
 
 const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  
+  const handleAddToCart = () => {
+    // Use the global addToCart function from Navbar
+    if (window.addToCart) {
+      window.addToCart({ id, name, price, image });
+      
+      // Show toast notification
+      toast.success("Added to cart", {
+        description: `${name} has been added to your cart.`,
+        duration: 3000,
+      });
+    }
+  };
   
   return (
     <motion.div 
@@ -62,7 +76,10 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
           <button className="p-2 rounded-full glass-panel hover:bg-white/90 transition-colors text-towel-dark">
             <Eye size={18} />
           </button>
-          <button className="p-2 rounded-full glass-panel hover:bg-white/90 transition-colors text-towel-dark">
+          <button 
+            className="p-2 rounded-full glass-panel hover:bg-white/90 transition-colors text-towel-dark"
+            onClick={handleAddToCart}
+          >
             <ShoppingCart size={18} />
           </button>
         </div>

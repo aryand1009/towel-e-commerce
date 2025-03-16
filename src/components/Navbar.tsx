@@ -3,11 +3,43 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import CartModal from './CartModal';
+import { CartItem } from './CartModal';
+
+// Create a context for sharing cart functionality
+export const useCart = () => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  
+  const addToCart = (product: Omit<CartItem, 'quantity'>) => {
+    setCartItems(prevItems => {
+      // Check if the item already exists in cart
+      const existingItem = prevItems.find(item => item.id === product.id);
+      
+      if (existingItem) {
+        // Increase quantity of existing item
+        return prevItems.map(item => 
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + 1 } 
+            : item
+        );
+      } else {
+        // Add new item with quantity 1
+        return [...prevItems, { ...product, quantity: 1 }];
+      }
+    });
+  };
+  
+  const removeFromCart = (id: string) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+  };
+  
+  return { cartItems, addToCart, removeFromCart };
+};
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const { cartItems, addToCart, removeFromCart } = useCart();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +53,11 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Make cart functions available globally
+  useEffect(() => {
+    window.addToCart = addToCart;
+  }, [addToCart]);
 
   return (
     <>
@@ -58,9 +95,11 @@ const Navbar = () => {
               onClick={() => setCartOpen(true)}
             >
               <ShoppingCart size={20} />
-              <span className="absolute -top-1 -right-1 bg-towel-accent text-towel-dark text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
-                0
-              </span>
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-towel-accent text-towel-dark text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
+                  {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                </span>
+              )}
             </button>
             
             <button 
@@ -89,9 +128,21 @@ const Navbar = () => {
         </div>
       </nav>
       
-      <CartModal isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+      <CartModal 
+        isOpen={cartOpen} 
+        onClose={() => setCartOpen(false)} 
+        cartItems={cartItems}
+        removeFromCart={removeFromCart}
+      />
     </>
   );
 };
+
+// Add types to the window object
+declare global {
+  interface Window {
+    addToCart: (product: Omit<CartItem, 'quantity'>) => void;
+  }
+}
 
 export default Navbar;
