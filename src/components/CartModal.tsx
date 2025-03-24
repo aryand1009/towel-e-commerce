@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { X, ShoppingBag, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/components/ui/use-toast";
 
 export interface CartItem {
   id: string;
@@ -21,6 +23,58 @@ interface CartModalProps {
 const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProps) => {
   // Calculate subtotal
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Add some items to your cart before checkout",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Save order to localStorage
+    const orderId = `order-${Date.now()}`;
+    const order = {
+      id: orderId,
+      items: cartItems,
+      total: subtotal,
+      date: new Date().toISOString(),
+      status: "Processing"
+    };
+    
+    // Get existing orders or initialize empty array
+    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    existingOrders.push(order);
+    localStorage.setItem('orders', JSON.stringify(existingOrders));
+    
+    // Update sales data in localStorage for admin dashboard
+    const salesData = JSON.parse(localStorage.getItem('salesData') || '{}');
+    
+    cartItems.forEach(item => {
+      if (salesData[item.name]) {
+        salesData[item.name] += item.quantity;
+      } else {
+        salesData[item.name] = item.quantity;
+      }
+    });
+    
+    localStorage.setItem('salesData', JSON.stringify(salesData));
+    
+    // Clear cart and show success message
+    localStorage.setItem('cartItems', '[]');
+    
+    toast({
+      title: "Order placed successfully!",
+      description: "Thank you for your purchase.",
+    });
+    
+    onClose();
+    navigate(`/order-details/${orderId}`);
+  };
   
   return (
     <AnimatePresence>
@@ -118,7 +172,10 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                   <span className="text-towel-gray">Shipping</span>
                   <span className="font-semibold">Calculated at checkout</span>
                 </div>
-                <button className="premium-button w-full mb-3">
+                <button 
+                  className="premium-button w-full mb-3"
+                  onClick={handleCheckout}
+                >
                   Checkout
                 </button>
                 <button 

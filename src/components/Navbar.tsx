@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Search, Menu, X, User, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,32 +12,59 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/components/ui/use-toast";
 
 // Create a context for sharing cart functionality
 export const useCart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { toast } = useToast();
+  
+  // Load cart items from localStorage on initial mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cartItems');
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
+    }
+  }, []);
+  
+  // Save cart items to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
   
   const addToCart = (product: Omit<CartItem, 'quantity'>) => {
     setCartItems(prevItems => {
       // Check if the item already exists in cart
       const existingItem = prevItems.find(item => item.id === product.id);
       
+      let newItems;
       if (existingItem) {
         // Increase quantity of existing item
-        return prevItems.map(item => 
+        newItems = prevItems.map(item => 
           item.id === product.id 
             ? { ...item, quantity: item.quantity + 1 } 
             : item
         );
       } else {
         // Add new item with quantity 1
-        return [...prevItems, { ...product, quantity: 1 }];
+        newItems = [...prevItems, { ...product, quantity: 1 }];
       }
+      
+      // Show toast notification
+      toast({
+        title: "Added to cart",
+        description: `${product.name} added to your cart.`
+      });
+      
+      return newItems;
     });
   };
   
   const removeFromCart = (id: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+    setCartItems(prevItems => {
+      const newItems = prevItems.filter(item => item.id !== id);
+      return newItems;
+    });
   };
   
   return { cartItems, addToCart, removeFromCart };
@@ -175,7 +201,6 @@ const Navbar = () => {
           </div>
         </div>
         
-        {/* Mobile menu */}
         <div 
           className={`md:hidden absolute top-full left-0 right-0 glass-panel overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? 'max-h-[500px] border-t border-white/20' : 'max-h-0'
