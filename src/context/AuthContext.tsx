@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Check admin credentials (in real app, this would be from backend)
       if (role === 'admin') {
-        if (email !== 'admin@luxetowels.com' || password !== 'admin123') {
+        if (email !== 'admin@dtex.com' || password !== 'admin123') {
           return false;
         }
       }

@@ -90,7 +90,7 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
         <span className="text-xs text-towel-gray font-medium uppercase">{category}</span>
         <h3 className="font-medium text-lg mt-1 mb-2">{name}</h3>
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-towel-dark">${price.toFixed(2)}</span>
+          <span className="font-semibold text-towel-dark">₹{price.toFixed(2)}</span>
           <div className="flex items-center gap-1">
             {Array(5).fill(0).map((_, i) => (
               <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">

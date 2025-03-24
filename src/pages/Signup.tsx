@@ -23,7 +23,6 @@ const signupSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Confirm password must be at least 6 characters"),
-  role: z.enum(["customer", "admin"])
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -42,7 +41,6 @@ const Signup = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      role: "customer"
     }
   });
 
@@ -50,7 +48,7 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
-      const success = await signup(values.email, values.name, values.password, values.role);
+      const success = await signup(values.email, values.name, values.password, 'customer');
       
       if (success) {
         toast({
@@ -58,11 +56,7 @@ const Signup = () => {
           description: "Your account has been successfully created!",
         });
         
-        if (values.role === "admin") {
-          navigate("/admin-dashboard");
-        } else {
-          navigate("/");
-        }
+        navigate("/");
       } else {
         toast({
           title: "Signup Failed",
@@ -145,35 +139,6 @@ const Signup = () => {
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Register As</FormLabel>
-                  <div className="flex space-x-4">
-                    <Button
-                      type="button"
-                      variant={field.value === "customer" ? "default" : "outline"}
-                      onClick={() => form.setValue("role", "customer")}
-                      className="flex-1"
-                    >
-                      Customer
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={field.value === "admin" ? "default" : "outline"}
-                      onClick={() => form.setValue("role", "admin")}
-                      className="flex-1"
-                    >
-                      Admin
-                    </Button>
-                  </div>
                   <FormMessage />
                 </FormItem>
               )}

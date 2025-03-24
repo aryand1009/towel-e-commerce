@@ -99,7 +99,7 @@ const OrderDetails = () => {
             </div>
             <div>
               <p>Total Amount</p>
-              <p className="font-medium text-foreground">${order.total.toFixed(2)}</p>
+              <p className="font-medium text-foreground">₹{order.total.toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -116,7 +116,7 @@ const OrderDetails = () => {
                   <h3 className="font-medium">{item.name}</h3>
                   <p className="text-sm text-towel-gray">Qty: {item.quantity}</p>
                 </div>
-                <div className="font-medium">${(item.price * item.quantity).toFixed(2)}</div>
+                <div className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -125,7 +125,7 @@ const OrderDetails = () => {
         <div className="bg-towel-beige/20 p-6 rounded-lg">
           <div className="flex justify-between mb-2">
             <span>Subtotal</span>
-            <span>${order.total.toFixed(2)}</span>
+            <span>₹{order.total.toFixed(2)}</span>
           </div>
           <div className="flex justify-between mb-2">
             <span>Shipping</span>
@@ -133,7 +133,7 @@ const OrderDetails = () => {
           </div>
           <div className="flex justify-between font-semibold text-lg pt-3 border-t">
             <span>Total</span>
-            <span>${order.total.toFixed(2)}</span>
+            <span>₹{order.total.toFixed(2)}</span>
           </div>
         </div>
         

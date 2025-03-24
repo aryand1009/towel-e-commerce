@@ -37,8 +37,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [salesData, setSalesData] = useState<any[]>([]);
-  const [customRequestsCount, setCustomRequestsCount] = useState(0);
-  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
   // Redirect if not an admin
   useEffect(() => {
@@ -63,19 +61,6 @@ const AdminDashboard = () => {
         value
       }));
       setSalesData(chartData);
-    }
-    
-    // Load custom requests data
-    const savedRequests = localStorage.getItem('customRequests');
-    if (savedRequests) {
-      const parsedRequests = JSON.parse(savedRequests);
-      setCustomRequestsCount(parsedRequests.length);
-      
-      // Count pending requests
-      const pendingCount = parsedRequests.filter(
-        (req: any) => req.status === 'pending'
-      ).length;
-      setPendingRequestsCount(pendingCount);
     }
   }, []);
 
@@ -106,7 +91,7 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="glass-panel p-6 rounded-lg">
             <h3 className="text-sm text-towel-gray mb-1">Total Revenue</h3>
-            <p className="text-2xl font-semibold">${totalRevenue.toFixed(2)}</p>
+            <p className="text-2xl font-semibold">₹{totalRevenue.toFixed(2)}</p>
           </div>
           
           <div className="glass-panel p-6 rounded-lg">
@@ -187,7 +172,7 @@ const AdminDashboard = () => {
                       <TableCell className="font-medium">{order.id.substring(0, 8)}...</TableCell>
                       <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                       <TableCell>{order.status}</TableCell>
-                      <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">₹{order.total.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -207,17 +192,6 @@ const AdminDashboard = () => {
             onClick={() => navigate('/admin/orders')}
           >
             View All Orders
-          </Button>
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={() => navigate('/admin/custom-requests')}
-          >
-            Custom Requests {pendingRequestsCount > 0 && (
-              <span className="ml-2 px-2 py-0.5 rounded-full bg-towel-accent text-xs font-semibold">
-                {pendingRequestsCount} new
-              </span>
-            )}
           </Button>
           <Button 
             variant="destructive" 

@@ -145,7 +145,7 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                         <h3 className="font-medium">{item.name}</h3>
                         <p className="text-towel-gray text-sm mb-2">Quantity: {item.quantity}</p>
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="font-semibold">₹{(item.price * item.quantity).toFixed(2)}</span>
                           <button 
                             className="text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
                             aria-label="Remove item"
@@ -166,7 +166,7 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
               <div className="py-4 px-6 border-t bg-towel-beige/30">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-towel-gray">Subtotal</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between mb-6">
                   <span className="text-towel-gray">Shipping</span>
