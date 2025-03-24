@@ -61,6 +61,21 @@ const Navbar = () => {
       delete window.addToCart;
     };
   }, []);
+
+  // Create a new useEffect to listen for storage events
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedCartItems = localStorage.getItem('cartItems');
+      if (savedCartItems) {
+        setCartItems(JSON.parse(savedCartItems));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
   
   // Add item to cart
   const addToCart = (item: {
@@ -180,7 +195,7 @@ const Navbar = () => {
                         className="w-full mt-2"
                       >
                         <ShoppingCart className="h-4 w-4 mr-2" />
-                        View Cart ({cartItems.length})
+                        View Cart ({cartItems.reduce((sum, item) => sum + item.quantity, 0)})
                       </Button>
                     )}
                   </div>
