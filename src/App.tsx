@@ -12,6 +12,9 @@ import UserProfile from "./pages/UserProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import OrderDetails from "./pages/OrderDetails";
 import NotFound from "./pages/NotFound";
+import CustomRequest from "./pages/CustomRequest";
+import AllOrders from "./pages/AllOrders";
+import CustomRequests from "./pages/CustomRequests";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ const App = () => (
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/order-details/:orderId" element={<OrderDetails />} />
+            <Route path="/custom-request" element={<CustomRequest />} />
+            <Route path="/admin/orders" element={<AllOrders />} />
+            <Route path="/admin/custom-requests" element={<CustomRequests />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

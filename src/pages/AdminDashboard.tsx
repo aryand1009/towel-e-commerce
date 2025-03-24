@@ -37,6 +37,8 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [salesData, setSalesData] = useState<any[]>([]);
+  const [customRequestsCount, setCustomRequestsCount] = useState(0);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
   // Redirect if not an admin
   useEffect(() => {
@@ -61,6 +63,19 @@ const AdminDashboard = () => {
         value
       }));
       setSalesData(chartData);
+    }
+    
+    // Load custom requests data
+    const savedRequests = localStorage.getItem('customRequests');
+    if (savedRequests) {
+      const parsedRequests = JSON.parse(savedRequests);
+      setCustomRequestsCount(parsedRequests.length);
+      
+      // Count pending requests
+      const pendingCount = parsedRequests.filter(
+        (req: any) => req.status === 'pending'
+      ).length;
+      setPendingRequestsCount(pendingCount);
     }
   }, []);
 
@@ -186,14 +201,23 @@ const AdminDashboard = () => {
         </div>
         
         <div className="space-y-4">
-          <Button variant="default" className="w-full">
-            Manage Products
-          </Button>
-          <Button variant="outline" className="w-full">
+          <Button 
+            variant="default" 
+            className="w-full"
+            onClick={() => navigate('/admin/orders')}
+          >
             View All Orders
           </Button>
-          <Button variant="outline" className="w-full">
-            Custom Requests
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => navigate('/admin/custom-requests')}
+          >
+            Custom Requests {pendingRequestsCount > 0 && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-towel-accent text-xs font-semibold">
+                {pendingRequestsCount} new
+              </span>
+            )}
           </Button>
           <Button 
             variant="destructive" 
