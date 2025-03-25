@@ -159,7 +159,7 @@ const Login = () => {
           
           {form.watch("role") === "admin" && (
             <p className="text-xs text-gray-500 mt-2">
-              Admin demo credentials: admin@luxetowels.com / admin123
+              Admin demo credentials: admin@dtex.com / admin123
             </p>
           )}
         </div>
