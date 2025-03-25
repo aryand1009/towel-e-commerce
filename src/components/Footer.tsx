@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-semibold mb-6">LUXE TOWELS</h3>
+            <h3 className="text-2xl font-semibold mb-6">DTex TOWELS</h3>
             <p className="text-towel-gray mb-6 max-w-md">
               Premium towels crafted with the finest materials for a luxurious bathing experience.
               Our commitment to quality and sustainability sets us apart.
@@ -103,16 +103,16 @@ const Footer = () => {
               <li className="flex items-start">
                 <MapPin size={20} className="mr-3 text-towel-accent flex-shrink-0 mt-1" />
                 <span className="text-towel-gray">
-                  123 Towel Street, Soft City, SC 12345, United States
+                  MIDC, Solpaur, Maharashtra, India.
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone size={20} className="mr-3 text-towel-accent flex-shrink-0" />
-                <span className="text-towel-gray">+1 (555) 123-4567</span>
+                <span className="text-towel-gray">+91 (555) 123-4567</span>
               </li>
               <li className="flex items-center">
                 <Mail size={20} className="mr-3 text-towel-accent flex-shrink-0" />
-                <span className="text-towel-gray">contact@luxetowels.com</span>
+                <span className="text-towel-gray">contact@dtex.com</span>
               </li>
             </ul>
           </div>
@@ -148,7 +148,7 @@ const Footer = () => {
         <div className="container mx-auto py-6 px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-towel-gray text-sm">
-              © {new Date().getFullYear()} LUXE TOWELS. All rights reserved.
+              © {new Date().getFullYear()} DTex. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
               <a href="#" className="text-towel-gray text-sm hover:text-white transition-colors">
