@@ -53,14 +53,14 @@ const Signup = () => {
       if (success) {
         toast({
           title: "Account Created",
-          description: "Your account has been successfully created!",
+          description: "Your account has been successfully created and you're now logged in!",
         });
         
         navigate("/");
       } else {
         toast({
           title: "Signup Failed",
-          description: "There was a problem creating your account. Please try again.",
+          description: "This email may already be registered. Please try again or use a different email.",
           variant: "destructive"
         });
       }
