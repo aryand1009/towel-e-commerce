@@ -109,6 +109,10 @@ const Navbar = () => {
       
       // Save to localStorage
       localStorage.setItem('cartItems', JSON.stringify(updatedItems));
+      
+      // Dispatch storage event to notify other components
+      window.dispatchEvent(new Event('storage'));
+      
       return updatedItems;
     });
   };

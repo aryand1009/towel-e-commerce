@@ -30,12 +30,20 @@ interface Order {
   status: string;
 }
 
+interface CustomRequest {
+  id: string;
+  title: string;
+  status: string;
+  date: string;
+}
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A172F7', '#FF6B6B'];
 
 const AdminDashboard = () => {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [customRequests, setCustomRequests] = useState<CustomRequest[]>([]);
   const [salesData, setSalesData] = useState<any[]>([]);
 
   // Redirect if not an admin
@@ -50,6 +58,12 @@ const AdminDashboard = () => {
     const savedOrders = localStorage.getItem('orders');
     if (savedOrders) {
       setOrders(JSON.parse(savedOrders));
+    }
+
+    // Load custom requests from localStorage
+    const savedRequests = localStorage.getItem('customRequests');
+    if (savedRequests) {
+      setCustomRequests(JSON.parse(savedRequests));
     }
 
     // Load sales data from localStorage
@@ -69,6 +83,9 @@ const AdminDashboard = () => {
   const shippedOrders = orders.filter(order => order.status === 'Shipped').length;
   const deliveredOrders = orders.filter(order => order.status === 'Delivered').length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  
+  // Count pending custom requests
+  const pendingRequests = customRequests.filter(req => req.status === 'pending').length;
 
   if (!isAdmin) {
     return null;
@@ -184,6 +201,57 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
+        
+        {/* Custom Requests Overview */}
+        {customRequests.length > 0 && (
+          <div className="glass-panel p-6 rounded-lg mb-8">
+            <h2 className="text-xl font-medium mb-4">Custom Design Requests</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <span className="text-towel-gray">Pending Requests:</span>
+                <span className="ml-2 font-semibold text-lg">{pendingRequests}</span>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/admin/custom-requests')}
+              >
+                Manage Custom Requests
+              </Button>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Request ID</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customRequests.slice(0, 3).map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell className="font-medium">{request.id.substring(0, 8)}...</TableCell>
+                    <TableCell>{request.title}</TableCell>
+                    <TableCell>{new Date(request.date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <span 
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          request.status === 'approved' 
+                            ? 'bg-green-100 text-green-800' 
+                            : request.status === 'rejected' 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
+                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
         
         <div className="space-y-4">
           <Button 
