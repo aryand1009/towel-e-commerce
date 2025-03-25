@@ -1,6 +1,5 @@
 
-import { useState } from 'react';
-import { X, ShoppingBag, Trash2 } from 'lucide-react';
+import { ShoppingBag, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -100,8 +99,8 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
           >
             {/* Header */}
             <div className="py-4 px-6 border-b flex items-center justify-between">
-              <h2 className="text-xl font-semibold flex items-center">
-                <ShoppingBag className="mr-2" size={20} />
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5" />
                 Your Cart
               </h2>
               <button 
@@ -109,15 +108,15 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                 className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                 aria-label="Close cart"
               >
-                <X size={20} />
+                <X className="h-5 w-5" />
               </button>
             </div>
             
             {/* Cart items */}
-            <div className="flex-1 overflow-y-auto py-4 px-6">
+            <div className="flex-1 overflow-y-auto">
               {cartItems.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-towel-gray">
-                  <ShoppingBag size={48} className="mb-4 opacity-30" />
+                <div className="h-full flex flex-col items-center justify-center text-towel-gray p-6">
+                  <ShoppingBag className="h-12 w-12 mb-4 opacity-30" />
                   <p className="text-lg font-medium">Your cart is empty</p>
                   <p className="mt-2 text-sm text-center">Looks like you haven't added any items to your cart yet.</p>
                   <button 
@@ -128,11 +127,11 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                   </button>
                 </div>
               ) : (
-                <ul className="divide-y">
+                <div className="divide-y">
                   {cartItems.map(item => (
-                    <li key={item.id} className="py-4 flex gap-4">
+                    <div key={item.id} className="flex p-4 gap-4">
                       {/* Product image */}
-                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-towel-beige/50 flex-shrink-0">
+                      <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                         <img 
                           src={item.image} 
                           alt={item.name} 
@@ -142,48 +141,50 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                       
                       {/* Product details */}
                       <div className="flex-1">
-                        <h3 className="font-medium">{item.name}</h3>
-                        <p className="text-towel-gray text-sm mb-2">Quantity: {item.quantity}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">₹{(item.price * item.quantity).toFixed(2)}</span>
-                          <button 
-                            className="text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
-                            aria-label="Remove item"
-                            onClick={() => removeFromCart(item.id)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                        <h3 className="font-medium text-towel-dark">{item.name}</h3>
+                        <p className="text-gray-500 text-sm">Quantity: {item.quantity}</p>
+                        <p className="font-semibold mt-1">${item.price.toFixed(2)}</p>
                       </div>
-                    </li>
+                      
+                      {/* Remove button */}
+                      <button 
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-red-500 self-start p-1"
+                        aria-label="Remove item"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
             
             {/* Footer with summary */}
             {cartItems.length > 0 && (
-              <div className="py-4 px-6 border-t bg-towel-beige/30">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-towel-gray">Subtotal</span>
-                  <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
+              <div className="border-t p-6 bg-gray-50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between mb-6">
-                  <span className="text-towel-gray">Shipping</span>
-                  <span className="font-semibold">Calculated at checkout</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Shipping</span>
+                  <span>Calculated at checkout</span>
                 </div>
-                <button 
-                  className="premium-button w-full mb-3"
-                  onClick={handleCheckout}
-                >
-                  Checkout
-                </button>
-                <button 
-                  onClick={onClose}
-                  className="w-full text-center text-towel-dark hover:text-towel-blue transition-colors"
-                >
-                  Continue Shopping
-                </button>
+                <div className="pt-4 space-y-3">
+                  <button 
+                    className="w-full bg-towel-dark text-white py-3 px-4 rounded font-medium hover:bg-opacity-90 transition"
+                    onClick={handleCheckout}
+                  >
+                    Checkout
+                  </button>
+                  <button 
+                    onClick={onClose}
+                    className="w-full text-center text-towel-dark hover:text-towel-blue transition-colors py-2"
+                  >
+                    Continue Shopping
+                  </button>
+                </div>
               </div>
             )}
           </motion.div>
