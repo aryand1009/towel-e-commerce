@@ -15,6 +15,7 @@ const CartButton = ({ cartItemsCount, onClick }: CartButtonProps) => {
       size="icon" 
       onClick={onClick}
       className="relative"
+      aria-label="Shopping cart"
     >
       <ShoppingCart className="h-5 w-5" />
       {cartItemsCount > 0 && (
