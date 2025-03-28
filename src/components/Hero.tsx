@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -12,6 +13,13 @@ const Hero = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  const scrollToProducts = () => {
+    const productsSection = document.getElementById('products-section');
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center pt-20 pb-32 px-4 overflow-hidden">
@@ -37,13 +45,18 @@ const Hero = () => {
               Experience luxury, comfort, and elegance in every touch.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="premium-button group">
+              <button 
+                className="premium-button group"
+                onClick={scrollToProducts}
+              >
                 Shop Collection
                 <ArrowRight className="inline-block ml-2 group-hover:translate-x-1 transition-transform" size={18} />
               </button>
-              <button className="border border-towel-dark text-towel-dark px-6 py-2.5 rounded-lg font-medium transition-all duration-300 hover:bg-towel-dark hover:text-white">
-                Learn More
-              </button>
+              <Link to="/about">
+                <button className="border border-towel-dark text-towel-dark px-6 py-2.5 rounded-lg font-medium transition-all duration-300 hover:bg-towel-dark hover:text-white">
+                  Learn More
+                </button>
+              </Link>
             </div>
           </div>
           

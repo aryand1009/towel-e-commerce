@@ -93,7 +93,9 @@ const Index = () => {
         </div>
       </section>
       
-      <ProductGrid />
+      <div id="products-section">
+        <ProductGrid />
+      </div>
       
       {/* Testimonials */}
       <section className="py-20 px-4 bg-towel-beige/30">
