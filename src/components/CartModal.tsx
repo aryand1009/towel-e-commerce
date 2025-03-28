@@ -1,5 +1,5 @@
 
-import { ShoppingBag, X } from 'lucide-react';
+import { ShoppingBag, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -149,10 +149,10 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                       {/* Remove button */}
                       <button 
                         onClick={() => removeFromCart(item.id)}
-                        className="text-red-500 self-start p-1"
+                        className="text-red-500 self-start p-2 hover:bg-red-50 rounded-full transition-colors"
                         aria-label="Remove item"
                       >
-                        <X className="h-5 w-5" />
+                        <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
                   ))}
