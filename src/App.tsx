@@ -17,6 +17,7 @@ import AllOrders from "./pages/AllOrders";
 import CustomRequests from "./pages/CustomRequests";
 import About from "./pages/About";
 import TrackOrder from "./pages/TrackOrder";
+import MyOrders from "./pages/MyOrders";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/admin/custom-requests" element={<CustomRequests />} />
             <Route path="/about" element={<About />} />
             <Route path="/track-order" element={<TrackOrder />} />
+            <Route path="/my-orders" element={<MyOrders />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

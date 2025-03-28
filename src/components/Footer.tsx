@@ -90,6 +90,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/my-orders" className="text-towel-gray hover:text-white transition-colors">
+                  My Orders
+                </Link>
+              </li>
+              <li>
                 <a href="#" className="text-towel-gray hover:text-white transition-colors">
                   Contact Us
                 </a>
