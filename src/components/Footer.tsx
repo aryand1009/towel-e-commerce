@@ -1,5 +1,6 @@
 
 import { Instagram, Facebook, Twitter, Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -84,9 +85,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
+                <Link to="/track-order" className="text-towel-gray hover:text-white transition-colors">
                   Track Order
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-towel-gray hover:text-white transition-colors">
