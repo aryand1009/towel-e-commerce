@@ -107,6 +107,45 @@ const TrackOrder = () => {
     }
   };
 
+  // Add a useEffect to listen for storage changes to update order status in real-time
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      if (order) {
+        const orders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
+        const updatedOrder = orders.find(o => o.id === order.id);
+        if (updatedOrder && updatedOrder.status !== order.status) {
+          setOrder(updatedOrder);
+          toast({
+            title: "Order Updated",
+            description: `Order status changed to ${updatedOrder.status}`,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // For local changes within the same window
+    const intervalId = setInterval(() => {
+      if (order) {
+        const orders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
+        const updatedOrder = orders.find(o => o.id === order.id);
+        if (updatedOrder && updatedOrder.status !== order.status) {
+          setOrder(updatedOrder);
+          toast({
+            title: "Order Updated",
+            description: `Order status changed to ${updatedOrder.status}`,
+          });
+        }
+      }
+    }, 5000); // Check every 5 seconds
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, [order]);
+
   return (
     <div className="min-h-screen">
       <Navbar />
