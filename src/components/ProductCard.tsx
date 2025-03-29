@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Heart, ShoppingCart, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from "sonner";
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   id: string;
@@ -16,8 +18,20 @@ interface ProductCardProps {
 
 const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      // Redirect to login if not authenticated
+      toast.info("Login required", {
+        description: "Please login to add items to your cart.",
+        duration: 3000,
+      });
+      navigate('/login');
+      return;
+    }
+    
     // Use the global addToCart function from Navbar
     if (window.addToCart) {
       window.addToCart({ id, name, price, image });
@@ -25,6 +39,27 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
       // Show toast notification
       toast.success("Added to cart", {
         description: `${name} has been added to your cart.`,
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleActionClick = (action: string) => {
+    if (!isAuthenticated) {
+      toast.info("Login required", {
+        description: `Please login to ${action} this product.`,
+        duration: 3000,
+      });
+      navigate('/login');
+      return;
+    }
+    
+    // Handle other actions here when authenticated
+    if (action === 'view') {
+      // View product details logic
+    } else if (action === 'wishlist') {
+      toast.success("Added to wishlist", {
+        description: `${name} has been added to your wishlist.`,
         duration: 3000,
       });
     }
@@ -70,10 +105,16 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
             transform: isHovered ? 'translateX(0)' : 'translateX(20px)'
           }}
         >
-          <button className="p-2 rounded-full glass-panel hover:bg-white/90 transition-colors text-towel-dark">
+          <button 
+            className="p-2 rounded-full glass-panel hover:bg-white/90 transition-colors text-towel-dark"
+            onClick={() => handleActionClick('wishlist')}
+          >
             <Heart size={18} />
           </button>
-          <button className="p-2 rounded-full glass-panel hover:bg-white/90 transition-colors text-towel-dark">
+          <button 
+            className="p-2 rounded-full glass-panel hover:bg-white/90 transition-colors text-towel-dark"
+            onClick={() => handleActionClick('view')}
+          >
             <Eye size={18} />
           </button>
           <button 

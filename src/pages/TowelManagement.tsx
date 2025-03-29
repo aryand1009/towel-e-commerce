@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -43,10 +43,11 @@ const TowelManagement = () => {
   const [newTowel, setNewTowel] = useState({
     name: '',
     price: '',
-    image: '',
     category: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Redirect if not an admin
   useEffect(() => {
@@ -101,20 +102,45 @@ const TowelManagement = () => {
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const imageUrl = e.target.value;
-    setNewTowel({
-      ...newTowel,
-      image: imageUrl,
-    });
-    setImagePreview(imageUrl);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Check file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Invalid file type', {
+          description: 'Please upload a JPG, JPEG, or PNG image.',
+        });
+        return;
+      }
+      
+      setImageFile(file);
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImagePreview(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImageSelection = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const validateTowelInput = () => {
     if (!newTowel.name.trim()) return 'Towel name is required';
     if (!newTowel.price.trim()) return 'Price is required';
     if (isNaN(parseFloat(newTowel.price)) || parseFloat(newTowel.price) <= 0) return 'Price must be a positive number';
-    if (!newTowel.image.trim()) return 'Image URL is required';
+    if (!imageFile) return 'Image is required';
     if (!newTowel.category.trim()) return 'Category is required';
     return null;
   };
@@ -128,11 +154,12 @@ const TowelManagement = () => {
       return;
     }
 
+    // Use the image preview data URL as the image source
     const newProduct: TowelProduct = {
       id: Date.now().toString(),
       name: newTowel.name,
       price: parseFloat(newTowel.price),
-      image: newTowel.image,
+      image: imagePreview as string, // This is the base64 data URL from the file upload
       category: newTowel.category,
       isNew: true,
     };
@@ -141,10 +168,9 @@ const TowelManagement = () => {
     setNewTowel({
       name: '',
       price: '',
-      image: '',
       category: '',
     });
-    setImagePreview(null);
+    clearImageSelection();
     
     toast.success('Success', {
       description: 'New towel added to collection!',
@@ -227,42 +253,41 @@ const TowelManagement = () => {
               </div>
               
               <div>
-                <label className="text-sm font-medium mb-1 block">Image URL</label>
-                <div className="flex gap-2">
-                  <Input 
-                    name="image" 
-                    value={newTowel.image}
-                    onChange={handleImageChange}
-                    placeholder="https://example.com/image.jpg"
-                    className="flex-1"
+                <label className="text-sm font-medium mb-1 block">Upload Image</label>
+                <div className="mt-2">
+                  {imagePreview ? (
+                    <div className="relative mt-2 border rounded-md overflow-hidden">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="w-full h-40 object-contain bg-muted p-2"
+                      />
+                      <button 
+                        className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full"
+                        onClick={clearImageSelection}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="border-2 border-dashed border-input rounded-lg p-8 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="mx-auto h-12 w-12 text-towel-gray mb-3" />
+                      <p className="text-sm font-medium">Click to upload an image</p>
+                      <p className="text-xs text-towel-gray mt-1">JPG, JPEG, or PNG</p>
+                    </div>
+                  )}
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    className="hidden" 
+                    accept="image/jpeg, image/png, image/jpg"
+                    onChange={handleFileChange}
                   />
                 </div>
               </div>
-              
-              {imagePreview && (
-                <div className="relative mt-2 border rounded-md overflow-hidden">
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="w-full h-40 object-cover"
-                    onError={() => {
-                      setImagePreview(null);
-                      toast.error('Error', {
-                        description: 'Invalid image URL. Please try another.',
-                      });
-                    }}
-                  />
-                  <button 
-                    className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full"
-                    onClick={() => {
-                      setImagePreview(null);
-                      setNewTowel({...newTowel, image: ''});
-                    }}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
             </CardContent>
             <CardFooter>
               <Button 

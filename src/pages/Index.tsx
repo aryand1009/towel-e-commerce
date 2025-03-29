@@ -7,8 +7,14 @@ import ProductGrid from '../components/ProductGrid';
 import FeaturedSection from '../components/FeaturedSection';
 import Footer from '../components/Footer';
 import { Sparkles, Truck, ShieldCheck, RotateCcw } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -16,6 +22,32 @@ const Index = () => {
   return (
     <div className="min-h-screen overflow-hidden">
       <Navbar />
+      
+      {/* Admin Dashboard Button */}
+      {isAdmin && (
+        <div className="container mx-auto px-4 pt-20">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-towel-blue text-white p-4 rounded-lg shadow-md"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-semibold">Admin Controls</h3>
+                <p className="text-sm opacity-90">Manage your towel store</p>
+              </div>
+              <Button 
+                onClick={() => navigate('/admin-dashboard')}
+                className="bg-white text-towel-blue hover:bg-white/90"
+              >
+                Dashboard
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      
       <Hero />
       
       {/* Features section */}

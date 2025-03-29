@@ -1,5 +1,4 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -13,7 +12,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 const CustomRequest = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,6 +27,16 @@ const CustomRequest = () => {
   
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login required",
+        description: "Please login to access custom towel requests.",
+      });
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate, toast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -60,7 +69,6 @@ const CustomRequest = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Create a custom request object
     const customRequest = {
       id: `custom-${Date.now()}`,
       userId: user?.id || 'guest',
@@ -76,16 +84,10 @@ const CustomRequest = () => {
       date: new Date().toISOString(),
     };
     
-    // Get existing custom requests from localStorage or initialize empty array
     const existingRequests = JSON.parse(localStorage.getItem('customRequests') || '[]');
-    
-    // Add new request to array
     const updatedRequests = [...existingRequests, customRequest];
-    
-    // Save back to localStorage
     localStorage.setItem('customRequests', JSON.stringify(updatedRequests));
     
-    // Show success toast and redirect
     toast({
       title: "Custom request submitted!",
       description: "We'll review your request and get back to you soon.",
@@ -94,6 +96,26 @@ const CustomRequest = () => {
     setIsSubmitting(false);
     navigate('/');
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow container mx-auto py-12 px-4 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold mb-4">Login Required</h2>
+            <p className="text-towel-gray mb-6">
+              Please login to access custom towel requests.
+            </p>
+            <Button onClick={() => navigate('/login')}>
+              Go to Login
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
