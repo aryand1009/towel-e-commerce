@@ -21,8 +21,28 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
+  SheetFooter,
 } from "@/components/ui/sheet";
-import { ArrowLeft, Search, X, Check } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { ArrowLeft, Search, X, Check, ClipboardCheck, Calendar, Timer } from 'lucide-react';
 
 interface CustomRequest {
   id: string;
@@ -37,6 +57,8 @@ interface CustomRequest {
   image: string | null;
   status: string;
   date: string;
+  completionTime?: number;
+  rejectionReason?: string;
 }
 
 const CustomRequests = () => {
@@ -48,6 +70,23 @@ const CustomRequests = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<CustomRequest | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [completionTime, setCompletionTime] = useState<number>(7);
+  const [rejectionReason, setRejectionReason] = useState<string>('');
+
+  // Forms for approve/reject
+  const approveForm = useForm({
+    defaultValues: {
+      completionTime: 7,
+    },
+  });
+
+  const rejectForm = useForm({
+    defaultValues: {
+      rejectionReason: '',
+    },
+  });
 
   // Redirect if not an admin
   useEffect(() => {
@@ -89,11 +128,64 @@ const CustomRequests = () => {
     setIsDetailOpen(true);
   };
 
+  // Open approval dialog
+  const openApproveDialog = (request: CustomRequest) => {
+    setSelectedRequest(request);
+    setCompletionTime(7); // Default to 7 days
+    approveForm.reset({ completionTime: 7 });
+    setIsApproveDialogOpen(true);
+    setIsDetailOpen(false);
+  };
+  
+  // Open rejection dialog
+  const openRejectDialog = (request: CustomRequest) => {
+    setSelectedRequest(request);
+    setRejectionReason('');
+    rejectForm.reset({ rejectionReason: '' });
+    setIsRejectDialogOpen(true);
+    setIsDetailOpen(false);
+  };
+
+  // Handle approval submission
+  const handleApprove = (data: { completionTime: number }) => {
+    if (!selectedRequest) return;
+    
+    updateRequestStatus(
+      selectedRequest.id, 
+      'approved', 
+      { completionTime: data.completionTime }
+    );
+    
+    setIsApproveDialogOpen(false);
+  };
+  
+  // Handle rejection submission
+  const handleReject = (data: { rejectionReason: string }) => {
+    if (!selectedRequest) return;
+    
+    updateRequestStatus(
+      selectedRequest.id, 
+      'rejected', 
+      { rejectionReason: data.rejectionReason }
+    );
+    
+    setIsRejectDialogOpen(false);
+  };
+
   // Update request status
-  const updateRequestStatus = (requestId: string, newStatus: string) => {
+  const updateRequestStatus = (
+    requestId: string, 
+    newStatus: string, 
+    additionalData?: { completionTime?: number; rejectionReason?: string }
+  ) => {
     const updatedRequests = requests.map(req => {
       if (req.id === requestId) {
-        return { ...req, status: newStatus };
+        return { 
+          ...req, 
+          status: newStatus,
+          ...(additionalData?.completionTime !== undefined ? { completionTime: additionalData.completionTime } : {}),
+          ...(additionalData?.rejectionReason !== undefined ? { rejectionReason: additionalData.rejectionReason } : {})
+        };
       }
       return req;
     });
@@ -102,21 +194,33 @@ const CustomRequests = () => {
     setFilteredRequests(
       filteredRequests.map(req => {
         if (req.id === requestId) {
-          return { ...req, status: newStatus };
+          return { 
+            ...req, 
+            status: newStatus,
+            ...(additionalData?.completionTime !== undefined ? { completionTime: additionalData.completionTime } : {}),
+            ...(additionalData?.rejectionReason !== undefined ? { rejectionReason: additionalData.rejectionReason } : {})
+          };
         }
         return req;
       })
     );
     
     if (selectedRequest && selectedRequest.id === requestId) {
-      setSelectedRequest({ ...selectedRequest, status: newStatus });
+      setSelectedRequest({ 
+        ...selectedRequest, 
+        status: newStatus,
+        ...(additionalData?.completionTime !== undefined ? { completionTime: additionalData.completionTime } : {}),
+        ...(additionalData?.rejectionReason !== undefined ? { rejectionReason: additionalData.rejectionReason } : {})
+      });
     }
     
     localStorage.setItem('customRequests', JSON.stringify(updatedRequests));
     
     toast({
       title: `Request ${newStatus}`,
-      description: `Custom request has been ${newStatus.toLowerCase()}.`,
+      description: newStatus === 'approved' 
+        ? `Custom request has been approved with ${additionalData?.completionTime} days completion time.`
+        : `Custom request has been rejected. Reason: ${additionalData?.rejectionReason}`,
     });
   };
 
@@ -212,7 +316,7 @@ const CustomRequests = () => {
                             variant="default" 
                             size="sm"
                             className="bg-green-600 hover:bg-green-700"
-                            onClick={() => updateRequestStatus(request.id, 'approved')}
+                            onClick={() => openApproveDialog(request)}
                           >
                             <Check className="h-4 w-4 mr-1" /> Approve
                           </Button>
@@ -220,7 +324,7 @@ const CustomRequests = () => {
                           <Button 
                             variant="destructive" 
                             size="sm"
-                            onClick={() => updateRequestStatus(request.id, 'rejected')}
+                            onClick={() => openRejectDialog(request)}
                           >
                             <X className="h-4 w-4 mr-1" /> Reject
                           </Button>
@@ -307,24 +411,42 @@ const CustomRequests = () => {
               
               <div className="pt-4 border-t">
                 <h3 className="text-sm font-medium text-towel-gray mb-3">Current Status</h3>
-                <span 
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    selectedRequest.status === 'approved' 
-                      ? 'bg-green-100 text-green-800' 
-                      : selectedRequest.status === 'rejected' 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                  }`}
-                >
-                  {selectedRequest.status.charAt(0).toUpperCase() + selectedRequest.status.slice(1)}
-                </span>
+                <div className="space-y-2">
+                  <span 
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      selectedRequest.status === 'approved' 
+                        ? 'bg-green-100 text-green-800' 
+                        : selectedRequest.status === 'rejected' 
+                          ? 'bg-red-100 text-red-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
+                    {selectedRequest.status.charAt(0).toUpperCase() + selectedRequest.status.slice(1)}
+                  </span>
+                  
+                  {selectedRequest.status === 'approved' && selectedRequest.completionTime && (
+                    <div className="flex items-center mt-2 gap-2 text-green-700">
+                      <Timer className="h-4 w-4" />
+                      <p className="text-sm">
+                        Estimated completion: {selectedRequest.completionTime} days
+                      </p>
+                    </div>
+                  )}
+                  
+                  {selectedRequest.status === 'rejected' && selectedRequest.rejectionReason && (
+                    <div className="mt-2 text-red-700 bg-red-50 p-3 rounded">
+                      <p className="text-sm font-medium mb-1">Reason for rejection:</p>
+                      <p className="text-sm">{selectedRequest.rejectionReason}</p>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {selectedRequest.status === 'pending' && (
                 <div className="flex gap-3 pt-4">
                   <Button 
                     className="flex-1 bg-green-600 hover:bg-green-700"
-                    onClick={() => updateRequestStatus(selectedRequest.id, 'approved')}
+                    onClick={() => openApproveDialog(selectedRequest)}
                   >
                     <Check className="h-4 w-4 mr-2" /> Approve Request
                   </Button>
@@ -332,7 +454,7 @@ const CustomRequests = () => {
                   <Button 
                     variant="destructive"
                     className="flex-1"
-                    onClick={() => updateRequestStatus(selectedRequest.id, 'rejected')}
+                    onClick={() => openRejectDialog(selectedRequest)}
                   >
                     <X className="h-4 w-4 mr-2" /> Reject Request
                   </Button>
@@ -342,6 +464,115 @@ const CustomRequests = () => {
           )}
         </SheetContent>
       </Sheet>
+      
+      {/* Approve Dialog */}
+      <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approve Custom Request</DialogTitle>
+            <DialogDescription>
+              Specify the estimated completion time for this custom order.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...approveForm}>
+            <form onSubmit={approveForm.handleSubmit(handleApprove)} className="space-y-6">
+              <FormField
+                control={approveForm.control}
+                name="completionTime"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>Completion Time (days)</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-towel-gray" />
+                        <Input
+                          type="number"
+                          min="1"
+                          max="90"
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                          className="flex-grow"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      How many days will it take to complete this custom design?
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsApproveDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <ClipboardCheck className="h-4 w-4 mr-2" /> Confirm Approval
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Reject Dialog */}
+      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject Custom Request</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this custom order. This will be shown to the customer.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...rejectForm}>
+            <form onSubmit={rejectForm.handleSubmit(handleReject)} className="space-y-6">
+              <FormField
+                control={rejectForm.control}
+                name="rejectionReason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rejection Reason</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Please explain why this request cannot be fulfilled..." 
+                        {...field}
+                        rows={5}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsRejectDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="destructive"
+                >
+                  <X className="h-4 w-4 mr-2" /> Confirm Rejection
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

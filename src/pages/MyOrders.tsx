@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, ExternalLink, PackageCheck, FileText } from 'lucide-react';
+import { ShoppingBag, ExternalLink, PackageCheck, FileText, Timer, AlertCircle } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -45,6 +45,8 @@ interface CustomRequest {
   image: string | null;
   status: string;
   date: string;
+  completionTime?: number;
+  rejectionReason?: string;
 }
 
 const MyOrders = () => {
@@ -189,6 +191,25 @@ const MyOrders = () => {
                             />
                           </div>
                         )}
+                        
+                        {request.status === 'approved' && request.completionTime && (
+                          <div className="flex items-center gap-2 text-green-700 mt-2">
+                            <Timer className="h-4 w-4" />
+                            <p className="text-sm">
+                              Estimated completion: {request.completionTime} days
+                            </p>
+                          </div>
+                        )}
+                        
+                        {request.status === 'rejected' && request.rejectionReason && (
+                          <div className="flex items-start gap-2 text-red-700 bg-red-50 p-3 rounded mt-2">
+                            <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-sm font-medium">Reason for rejection:</p>
+                              <p className="text-sm">{request.rejectionReason}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                     <CardFooter className="flex justify-between border-t pt-4">
@@ -199,7 +220,9 @@ const MyOrders = () => {
                       {request.status.toLowerCase() === 'approved' && (
                         <div className="text-right">
                           <p className="text-sm text-towel-gray">Estimated delivery</p>
-                          <p className="text-sm font-medium">2-3 weeks</p>
+                          <p className="text-sm font-medium">
+                            {request.completionTime} days
+                          </p>
                         </div>
                       )}
                     </CardFooter>
