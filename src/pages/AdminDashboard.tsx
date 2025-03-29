@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -46,7 +45,6 @@ const AdminDashboard = () => {
   const [customRequests, setCustomRequests] = useState<CustomRequest[]>([]);
   const [salesData, setSalesData] = useState<any[]>([]);
 
-  // Redirect if not an admin
   useEffect(() => {
     if (!isAdmin) {
       navigate('/login');
@@ -54,19 +52,16 @@ const AdminDashboard = () => {
   }, [isAdmin, navigate]);
 
   useEffect(() => {
-    // Load orders from localStorage
     const savedOrders = localStorage.getItem('orders');
     if (savedOrders) {
       setOrders(JSON.parse(savedOrders));
     }
 
-    // Load custom requests from localStorage
     const savedRequests = localStorage.getItem('customRequests');
     if (savedRequests) {
       setCustomRequests(JSON.parse(savedRequests));
     }
 
-    // Load sales data from localStorage
     const savedSalesData = localStorage.getItem('salesData');
     if (savedSalesData) {
       const parsedData = JSON.parse(savedSalesData);
@@ -78,13 +73,11 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // Calculate order statistics
   const newOrders = orders.filter(order => order.status === 'Processing').length;
   const shippedOrders = orders.filter(order => order.status === 'Shipped').length;
   const deliveredOrders = orders.filter(order => order.status === 'Delivered').length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
   
-  // Count pending custom requests
   const pendingRequests = customRequests.filter(req => req.status === 'pending').length;
 
   if (!isAdmin) {
@@ -105,7 +98,7 @@ const AdminDashboard = () => {
           <p className="text-towel-gray">Welcome, Admin {user?.name || user?.email}</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="glass-panel p-6 rounded-lg">
             <h3 className="text-sm text-towel-gray mb-1">Total Revenue</h3>
             <p className="text-2xl font-semibold">₹{totalRevenue.toFixed(2)}</p>
@@ -202,7 +195,6 @@ const AdminDashboard = () => {
           </div>
         </div>
         
-        {/* Custom Requests Overview */}
         {customRequests.length > 0 && (
           <div className="glass-panel p-6 rounded-lg mb-8">
             <h2 className="text-xl font-medium mb-4">Custom Design Requests</h2>
@@ -253,7 +245,7 @@ const AdminDashboard = () => {
           </div>
         )}
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <Button 
             variant="default" 
             className="w-full"
@@ -261,17 +253,26 @@ const AdminDashboard = () => {
           >
             View All Orders
           </Button>
+          
           <Button 
-            variant="destructive" 
+            variant="default" 
             className="w-full"
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
+            onClick={() => navigate('/towel-management')}
           >
-            Logout
+            Manage Towel Collection
           </Button>
         </div>
+        
+        <Button 
+          variant="destructive" 
+          className="w-full mt-4"
+          onClick={() => {
+            logout();
+            navigate('/login');
+          }}
+        >
+          Logout
+        </Button>
       </div>
     </motion.div>
   );

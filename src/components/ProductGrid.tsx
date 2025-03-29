@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
 
-// Mock product data
-const products = [
+// Default product data (only used if localStorage is empty)
+const defaultProducts = [
   {
     id: '1',
     name: 'Ultra Soft Bath Towel',
@@ -71,18 +71,33 @@ const products = [
 const categories = ['All', 'Bath', 'Hand', 'Face', 'Beach', 'Sport', 'Kids'];
 
 const ProductGrid = () => {
+  const [products, setProducts] = useState(defaultProducts);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [visibleProducts, setVisibleProducts] = useState(4);
   
-  // Filter products when category changes
+  // Load products from localStorage
+  useEffect(() => {
+    const savedProducts = localStorage.getItem('towelProducts');
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts));
+    } else {
+      // If no products found in localStorage, save the default products
+      localStorage.setItem('towelProducts', JSON.stringify(defaultProducts));
+    }
+  }, []);
+  
+  // Filter products when category changes or products change
   useEffect(() => {
     if (selectedCategory === 'All') {
       setFilteredProducts(products);
     } else {
       setFilteredProducts(products.filter(product => product.category === selectedCategory));
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, products]);
+
+  // Generate categories from products
+  const dynamicCategories = ['All', ...new Set(products.map(product => product.category))];
 
   return (
     <section className="py-20 px-4">
@@ -97,7 +112,7 @@ const ProductGrid = () => {
         
         {/* Category filter */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {categories.map((category) => (
+          {dynamicCategories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
