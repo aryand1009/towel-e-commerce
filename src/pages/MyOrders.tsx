@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, ExternalLink, PackageCheck } from 'lucide-react';
+import { ShoppingBag, ExternalLink, PackageCheck, FileText } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -32,10 +32,26 @@ interface Order {
   status: string;
 }
 
+interface CustomRequest {
+  id: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  title: string;
+  description: string;
+  quantity: number;
+  budget: number;
+  phone: string;
+  image: string | null;
+  status: string;
+  date: string;
+}
+
 const MyOrders = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [customRequests, setCustomRequests] = useState<CustomRequest[]>([]);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -51,24 +67,14 @@ const MyOrders = () => {
       // In a real app, filter orders by user ID
       // For this demo, we're showing all orders
       setOrders(allOrders);
+      
+      // Load custom requests
+      const allRequests: CustomRequest[] = JSON.parse(localStorage.getItem('customRequests') || '[]');
+      // In a real app, filter by user ID
+      // For this demo, we're showing all custom requests
+      setCustomRequests(allRequests);
     }
   }, [isAuthenticated]);
-
-  // Helper function to get status badge styling
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'processing':
-        return 'warning';
-      case 'shipped':
-        return 'info';
-      case 'delivered':
-        return 'success';
-      case 'cancelled':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  };
 
   if (!isAuthenticated) {
     return null;
@@ -87,49 +93,131 @@ const MyOrders = () => {
           <h1 className="text-3xl font-semibold">My Orders</h1>
         </div>
 
-        {orders.length > 0 ? (
-          <div className="space-y-6">
-            <Tabs defaultValue="all" className="w-full">
-              <TabsList className="mb-6">
-                <TabsTrigger value="all">All Orders</TabsTrigger>
-                <TabsTrigger value="processing">Processing</TabsTrigger>
-                <TabsTrigger value="shipped">Shipped</TabsTrigger>
-                <TabsTrigger value="delivered">Delivered</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all">
-                <OrderList orders={orders} />
-              </TabsContent>
-              
-              <TabsContent value="processing">
-                <OrderList orders={orders.filter(order => 
-                  order.status.toLowerCase() === 'processing'
-                )} />
-              </TabsContent>
-              
-              <TabsContent value="shipped">
-                <OrderList orders={orders.filter(order => 
-                  order.status.toLowerCase() === 'shipped'
-                )} />
-              </TabsContent>
-              
-              <TabsContent value="delivered">
-                <OrderList orders={orders.filter(order => 
-                  order.status.toLowerCase() === 'delivered'
-                )} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        ) : (
-          <div className="text-center py-12 border rounded-lg border-dashed">
-            <PackageCheck className="h-12 w-12 mx-auto text-towel-gray mb-4" />
-            <h3 className="text-xl font-medium mb-2">No orders yet</h3>
-            <p className="text-towel-gray mb-6">You haven't placed any orders yet.</p>
-            <Button onClick={() => navigate('/')}>
-              Start Shopping
-            </Button>
-          </div>
-        )}
+        <Tabs defaultValue="regular" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="regular" className="flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              Regular Orders
+            </TabsTrigger>
+            <TabsTrigger value="custom" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Custom Designs
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="regular">
+            {orders.length > 0 ? (
+              <div className="space-y-6">
+                <Tabs defaultValue="all" className="w-full">
+                  <TabsList className="mb-6">
+                    <TabsTrigger value="all">All Orders</TabsTrigger>
+                    <TabsTrigger value="processing">Processing</TabsTrigger>
+                    <TabsTrigger value="shipped">Shipped</TabsTrigger>
+                    <TabsTrigger value="delivered">Delivered</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="all">
+                    <OrderList orders={orders} />
+                  </TabsContent>
+                  
+                  <TabsContent value="processing">
+                    <OrderList orders={orders.filter(order => 
+                      order.status.toLowerCase() === 'processing'
+                    )} />
+                  </TabsContent>
+                  
+                  <TabsContent value="shipped">
+                    <OrderList orders={orders.filter(order => 
+                      order.status.toLowerCase() === 'shipped'
+                    )} />
+                  </TabsContent>
+                  
+                  <TabsContent value="delivered">
+                    <OrderList orders={orders.filter(order => 
+                      order.status.toLowerCase() === 'delivered'
+                    )} />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            ) : (
+              <div className="text-center py-12 border rounded-lg border-dashed">
+                <PackageCheck className="h-12 w-12 mx-auto text-towel-gray mb-4" />
+                <h3 className="text-xl font-medium mb-2">No orders yet</h3>
+                <p className="text-towel-gray mb-6">You haven't placed any orders yet.</p>
+                <Button onClick={() => navigate('/')}>
+                  Start Shopping
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="custom">
+            {customRequests.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {customRequests.map((request) => (
+                  <Card key={request.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{request.title}</CardTitle>
+                          <CardDescription>
+                            {new Date(request.date).toLocaleDateString()} • Quantity: {request.quantity}
+                          </CardDescription>
+                        </div>
+                        <Badge
+                          variant={
+                            request.status.toLowerCase() === 'pending' ? 'secondary' :
+                            request.status.toLowerCase() === 'approved' ? 'success' :
+                            'destructive'
+                          }
+                        >
+                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {request.description}
+                        </p>
+                        {request.image && (
+                          <div className="h-24 w-full bg-gray-100 rounded overflow-hidden">
+                            <img 
+                              src={request.image} 
+                              alt="Design reference" 
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-between border-t pt-4">
+                      <div>
+                        <p className="text-sm text-towel-gray">Budget per item</p>
+                        <p className="font-semibold">₹{request.budget.toFixed(2)}</p>
+                      </div>
+                      {request.status.toLowerCase() === 'approved' && (
+                        <div className="text-right">
+                          <p className="text-sm text-towel-gray">Estimated delivery</p>
+                          <p className="text-sm font-medium">2-3 weeks</p>
+                        </div>
+                      )}
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 border rounded-lg border-dashed">
+                <FileText className="h-12 w-12 mx-auto text-towel-gray mb-4" />
+                <h3 className="text-xl font-medium mb-2">No custom designs yet</h3>
+                <p className="text-towel-gray mb-6">You haven't submitted any custom design requests yet.</p>
+                <Button onClick={() => navigate('/custom-request')}>
+                  Create Custom Request
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </motion.div>
   );
@@ -159,7 +247,7 @@ const OrderList = ({ orders }: { orders: Order[] }) => {
               </div>
               <Badge
                 variant={
-                  order.status.toLowerCase() === 'processing' ? 'warning' :
+                  order.status.toLowerCase() === 'processing' ? 'secondary' :
                   order.status.toLowerCase() === 'shipped' ? 'secondary' :
                   order.status.toLowerCase() === 'delivered' ? 'success' :
                   'destructive'
