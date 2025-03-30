@@ -144,7 +144,7 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                       <div className="flex-1">
                         <h3 className="font-medium text-towel-dark">{item.name}</h3>
                         <p className="text-gray-500 text-sm">Quantity: {item.quantity}</p>
-                        <p className="font-semibold mt-1">${item.price.toFixed(2)}</p>
+                        <p className="font-semibold mt-1">₹{item.price.toFixed(2)}</p>
                       </div>
                       
                       {/* Remove button */}
@@ -166,7 +166,7 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
               <div className="border-t p-6 bg-gray-50 space-y-4 sticky bottom-0 z-10">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Shipping</span>

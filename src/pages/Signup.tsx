@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Confirm password must be at least 6 characters"),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -39,6 +40,7 @@ const Signup = () => {
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
       password: "",
       confirmPassword: "",
     }
@@ -51,6 +53,14 @@ const Signup = () => {
       const success = await signup(values.email, values.name, values.password, 'customer');
       
       if (success) {
+        // Store phone number in localStorage as we don't have a backend
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const userIndex = users.findIndex((u: any) => u.email === values.email);
+        if (userIndex >= 0) {
+          users[userIndex].phone = values.phone;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        
         toast({
           title: "Account Created",
           description: "Your account has been successfully created and you're now logged in!",
@@ -110,6 +120,20 @@ const Signup = () => {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input placeholder="your@email.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="+91 1234567890" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -209,7 +209,7 @@ const UserProfile = () => {
                         </div>
                         <div className="mt-3">
                           <p className="text-sm text-towel-gray line-clamp-2">{request.description}</p>
-                          <p className="font-semibold mt-2">Budget: ${request.budget.toFixed(2)} per item</p>
+                          <p className="font-semibold mt-2">Budget: ₹{request.budget.toFixed(2)} per item</p>
                         </div>
                       </div>
                     ))}

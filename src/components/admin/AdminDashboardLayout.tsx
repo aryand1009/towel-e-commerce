@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { Home } from 'lucide-react';
 
 interface AdminDashboardLayoutProps {
   userName?: string | null;
@@ -27,7 +28,15 @@ const AdminDashboardLayout: React.FC<AdminDashboardLayoutProps> = ({
       transition={{ duration: 0.5 }}
     >
       <div className="glass-panel p-8 rounded-lg">
-        <h1 className="text-3xl font-semibold mb-6">Admin Dashboard</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-semibold">Admin Dashboard</h1>
+          <Link to="/">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Home size={16} />
+              Home
+            </Button>
+          </Link>
+        </div>
         
         <div className="mb-6">
           <p className="text-towel-gray">Welcome, Admin {userName || userEmail}</p>

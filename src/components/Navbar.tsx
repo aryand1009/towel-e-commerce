@@ -7,6 +7,8 @@ import NavLinks from './navbar/NavLinks';
 import UserMenu from './navbar/UserMenu';
 import CartButton from './navbar/CartButton';
 import MobileMenu from './navbar/MobileMenu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { User } from 'lucide-react';
 import { loadCartFromStorage, removeItemFromCart, addItemToCart, CartItem } from './navbar/cartUtils';
 
 // Define CartItem type for global access
@@ -73,6 +75,24 @@ const Navbar = () => {
         <div className="flex items-center space-x-4">
           {user ? (
             <>
+              {/* Profile Icon for customer */}
+              {!isAdmin && (
+                <Link to="/profile" className="hidden md:flex items-center">
+                  <Avatar className="h-9 w-9 hover:ring-2 hover:ring-towel-blue transition-all">
+                    <AvatarFallback className="bg-towel-blue text-white">
+                      <User className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              )}
+              
+              {/* Home button for admin */}
+              {isAdmin && (
+                <Link to="/" className="hidden md:flex">
+                  <Button variant="outline" size="sm">Home</Button>
+                </Link>
+              )}
+              
               <UserMenu user={user} onLogout={logout} />
               
               {!isAdmin && (

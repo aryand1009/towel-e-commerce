@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="bg-towel-dark text-white">
       {/* Main footer */}
       <div className="container mx-auto py-16 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}
           <div>
             <h3 className="text-2xl font-semibold mb-6">DTex TOWELS</h3>
@@ -28,62 +28,10 @@ const Footer = () => {
             </div>
           </div>
           
-          {/* Shop */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6">Shop</h4>
-            <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  All Products
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Bath Towels
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Hand Towels
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Face Towels
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Beach Towels
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Custom Designs
-                </a>
-              </li>
-            </ul>
-          </div>
-          
           {/* Help */}
           <div>
-            <h4 className="text-lg font-semibold mb-6">Help</h4>
+            <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Shipping & Returns
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Care Instructions
-                </a>
-              </li>
               <li>
                 <Link to="/track-order" className="text-towel-gray hover:text-white transition-colors">
                   Track Order
@@ -95,9 +43,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-towel-gray hover:text-white transition-colors">
-                  Contact Us
-                </a>
+                <Link to="/about" className="text-towel-gray hover:text-white transition-colors">
+                  About Us
+                </Link>
               </li>
             </ul>
           </div>
