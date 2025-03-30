@@ -1,80 +1,15 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, UserRole, AuthContextType } from '@/types/auth';
+import { 
+  getUserByCredentials, 
+  saveUserToDatabase, 
+  saveUserSession, 
+  getUserSession, 
+  clearUserSession 
+} from '@/services/userService';
 
-type UserRole = 'customer' | 'admin' | null;
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  role: UserRole;
-}
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isAdmin: boolean;
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  signup: (email: string, name: string, password: string, role: UserRole) => Promise<boolean>;
-  logout: () => void;
-}
-
-// Our "database" - in a real app, this would be a real database
-// For this demo, we're using localStorage as our "database"
-const USERS_STORAGE_KEY = 'app_users_database';
-
-// Helper function to get users from our "database"
-const getStoredUsers = (): Record<string, { id: string, email: string, password: string, name?: string, role: UserRole }> => {
-  const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-  if (storedUsers) {
-    return JSON.parse(storedUsers);
-  }
-  
-  // Initialize with admin account
-  const initialUsers = {
-    'admin@dtex.com': {
-      id: 'admin-1',
-      email: 'admin@dtex.com',
-      password: 'admin123',
-      role: 'admin' as UserRole
-    }
-  };
-  
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(initialUsers));
-  return initialUsers;
-};
-
-// Helper function to save a user to our "database"
-const saveUserToDatabase = (
-  email: string, 
-  password: string, 
-  role: UserRole, 
-  name?: string
-): { id: string, email: string, role: UserRole, name?: string } => {
-  const users = getStoredUsers();
-  
-  // Create user entry
-  const userId = `user-${Math.random().toString(36).substring(2)}`;
-  users[email] = {
-    id: userId,
-    email,
-    password, // In a real app, this would be hashed!
-    role,
-    ...(name ? { name } : {})
-  };
-  
-  // Save updated users
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-  
-  // Return user data (without password)
-  return {
-    id: userId,
-    email,
-    role,
-    ...(name ? { name } : {})
-  };
-};
-
+// Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -83,15 +18,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Check for existing user session on load
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
+    const savedUser = getUserSession();
     if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
+      setUser(savedUser);
       setIsAuthenticated(true);
     }
   }, []);
 
-  // Login function - now checks against our "database"
+  // Login function
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     try {
       // Simulate network delay
@@ -102,32 +36,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      // Get users from database
-      const users = getStoredUsers();
+      // Get user by credentials
+      const loggedInUser = getUserByCredentials(email, password);
       
-      // Check if user exists and password matches
-      const userRecord = users[email];
-      if (!userRecord || userRecord.password !== password) {
+      // Check if user exists
+      if (!loggedInUser) {
         return false;
       }
       
       // Verify role if provided (for extra security)
-      if (role && userRecord.role !== role) {
+      if (role && loggedInUser.role !== role) {
         return false;
       }
-
-      // Create user object (without password)
-      const loggedInUser: User = {
-        id: userRecord.id,
-        email: userRecord.email,
-        name: userRecord.name,
-        role: userRecord.role,
-      };
 
       // Save to state and localStorage for session
       setUser(loggedInUser);
       setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(loggedInUser));
+      saveUserSession(loggedInUser);
       
       return true;
     } catch (error) {
@@ -136,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Signup function - now stores in our "database"
+  // Signup function
   const signup = async (email: string, name: string, password: string, role: UserRole): Promise<boolean> => {
     try {
       // Simulate network delay
@@ -148,9 +73,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Check if user already exists
-      const users = getStoredUsers();
-      if (users[email]) {
-        // User already exists
+      const existingUser = getUserByCredentials(email, password);
+      if (existingUser) {
         return false;
       }
 
@@ -160,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save to state and localStorage for session
       setUser(newUser);
       setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      saveUserSession(newUser);
       
       return true;
     } catch (error) {
@@ -169,10 +93,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Logout function
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('user');
+    clearUserSession();
   };
 
   const isAdmin = user?.role === 'admin';
@@ -191,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// Custom hook to use the auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
