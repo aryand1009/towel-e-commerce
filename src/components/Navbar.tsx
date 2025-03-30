@@ -9,6 +9,7 @@ import CartButton from './navbar/CartButton';
 import MobileMenu from './navbar/MobileMenu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
+import { Button } from '@/components/ui/button'; // Added this import
 import { loadCartFromStorage, removeItemFromCart, addItemToCart, CartItem } from './navbar/cartUtils';
 
 // Define CartItem type for global access
