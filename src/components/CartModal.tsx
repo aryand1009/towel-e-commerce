@@ -95,10 +95,11 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col"
+            className="fixed top-0 right-0 h-screen w-full max-w-md bg-white shadow-xl z-50 flex flex-col overflow-hidden"
+            style={{ maxHeight: '100vh' }}
           >
             {/* Header */}
-            <div className="py-4 px-6 border-b flex items-center justify-between">
+            <div className="py-4 px-6 border-b flex items-center justify-between bg-white sticky top-0 z-10">
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
                 Your Cart
@@ -162,7 +163,7 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
             
             {/* Footer with summary */}
             {cartItems.length > 0 && (
-              <div className="border-t p-6 bg-gray-50 space-y-4">
+              <div className="border-t p-6 bg-gray-50 space-y-4 sticky bottom-0 z-10">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-semibold">${subtotal.toFixed(2)}</span>
