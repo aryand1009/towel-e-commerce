@@ -29,7 +29,6 @@ const AdminDashboardLayout: React.FC<AdminDashboardLayoutProps> = ({
       <div className="glass-panel p-8 rounded-lg">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-semibold">Admin Dashboard</h1>
-          {/* Removed Home button */}
         </div>
         
         <div className="mb-6">

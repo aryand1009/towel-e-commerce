@@ -9,7 +9,7 @@ import CartButton from './navbar/CartButton';
 import MobileMenu from './navbar/MobileMenu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
-import { Button } from '@/components/ui/button'; // Added this import
+import { Button } from '@/components/ui/button';
 import { loadCartFromStorage, removeItemFromCart, addItemToCart, CartItem } from './navbar/cartUtils';
 
 // Define CartItem type for global access
@@ -87,12 +87,7 @@ const Navbar = () => {
                 </Link>
               )}
               
-              {/* Home button for admin */}
-              {isAdmin && (
-                <Link to="/" className="hidden md:flex">
-                  <Button variant="outline" size="sm">Home</Button>
-                </Link>
-              )}
+              {/* Removed the Home button for admin */}
               
               <UserMenu user={user} onLogout={logout} />
               
