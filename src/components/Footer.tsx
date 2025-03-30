@@ -1,8 +1,11 @@
 
 import { Instagram, Facebook, Twitter, Mail, MapPin, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 const Footer = () => {
+  const { isAdmin } = useAuth();
+
   return (
     <footer className="bg-towel-dark text-white">
       {/* Main footer */}
@@ -28,30 +31,32 @@ const Footer = () => {
             </div>
           </div>
           
-          {/* Help */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/track-order" className="text-towel-gray hover:text-white transition-colors">
-                  Track Order
-                </Link>
-              </li>
-              <li>
-                <Link to="/my-orders" className="text-towel-gray hover:text-white transition-colors">
-                  My Orders
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-towel-gray hover:text-white transition-colors">
-                  About Us
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Help - Only show for customers */}
+          {!isAdmin && (
+            <div>
+              <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link to="/track-order" className="text-towel-gray hover:text-white transition-colors">
+                    Track Order
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/my-orders" className="text-towel-gray hover:text-white transition-colors">
+                    My Orders
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/about" className="text-towel-gray hover:text-white transition-colors">
+                    About Us
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
           
           {/* Contact */}
-          <div>
+          <div className={isAdmin ? "md:col-span-2" : ""}>
             <h4 className="text-lg font-semibold mb-6">Contact</h4>
             <ul className="space-y-4">
               <li className="flex items-start">

@@ -2,14 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+import { FileText } from 'lucide-react';
 
 interface CustomRequest {
   id: string;
@@ -23,63 +16,53 @@ interface CustomRequestsPanelProps {
   pendingRequests: number;
 }
 
-const CustomRequestsPanel: React.FC<CustomRequestsPanelProps> = ({ 
-  customRequests, 
-  pendingRequests 
-}) => {
+const CustomRequestsPanel = ({ customRequests }: CustomRequestsPanelProps) => {
   const navigate = useNavigate();
-  
-  if (customRequests.length === 0) {
-    return null;
-  }
+  const recentRequests = customRequests.slice(0, 3);
 
   return (
-    <div className="glass-panel p-6 rounded-lg mb-8">
-      <h2 className="text-xl font-medium mb-4">Custom Design Requests</h2>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <span className="text-towel-gray">Pending Requests:</span>
-          <span className="ml-2 font-semibold text-lg">{pendingRequests}</span>
-        </div>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/admin/custom-requests')}
-        >
-          Manage Custom Requests
-        </Button>
+    <div className="glass-panel p-6 rounded-lg">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-semibold">Custom Design Requests</h3>
+        {/* Removed the pending requests count */}
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Request ID</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {customRequests.slice(0, 3).map((request) => (
-            <TableRow key={request.id}>
-              <TableCell className="font-medium">{request.id.substring(0, 8)}...</TableCell>
-              <TableCell>{request.title}</TableCell>
-              <TableCell>{new Date(request.date).toLocaleDateString()}</TableCell>
-              <TableCell>
-                <span 
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    request.status === 'approved' 
-                      ? 'bg-green-100 text-green-800' 
-                      : request.status === 'rejected' 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                  }`}
-                >
-                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                </span>
-              </TableCell>
-            </TableRow>
+      
+      {recentRequests.length > 0 ? (
+        <div className="space-y-4">
+          {recentRequests.map(request => (
+            <div key={request.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+              <div className="flex items-center">
+                <FileText size={18} className="text-towel-blue mr-3" />
+                <div>
+                  <h4 className="text-sm font-medium">{request.title}</h4>
+                  <p className="text-xs text-towel-gray">
+                    {new Date(request.date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                request.status === 'pending' 
+                  ? 'bg-yellow-100 text-yellow-800' 
+                  : request.status === 'approved'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {request.status}
+              </span>
+            </div>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      ) : (
+        <p className="text-center py-4 text-towel-gray">No custom requests yet.</p>
+      )}
+      
+      <Button 
+        variant="outline" 
+        className="w-full mt-4"
+        onClick={() => navigate('/admin/custom-requests')}
+      >
+        View All Requests
+      </Button>
     </div>
   );
 };

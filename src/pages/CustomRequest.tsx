@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -122,7 +123,7 @@ const CustomRequest = () => {
       <Navbar />
       
       <motion.div 
-        className="flex-grow container mx-auto py-12 px-4"
+        className="flex-grow container mx-auto pt-32 pb-12 px-4" // Changed from py-12 to pt-32 to fix header overlap
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
