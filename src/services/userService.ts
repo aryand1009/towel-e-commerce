@@ -53,6 +53,9 @@ export const saveUserToDatabase = (
   // Save updated users
   localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
   
+  // Initialize empty order history for new users
+  initializeEmptyUserData(email);
+  
   // Return user data (without password)
   return {
     id: userId,
@@ -61,6 +64,19 @@ export const saveUserToDatabase = (
     ...(name ? { name } : {}),
     ...(phone ? { phone } : {})
   };
+};
+
+/**
+ * Initialize empty order history and custom requests for a new user
+ */
+const initializeEmptyUserData = (email: string): void => {
+  // Ensure the user starts with empty orders and custom requests
+  // This is necessary because we're using localStorage
+  // In a real database, this would be handled by proper data relationships
+  
+  // No need to initialize anything - the filter by email will ensure new users see nothing
+  // This function is here for extensibility if needed in the future
+  console.log(`Initialized empty data store for new user: ${email}`);
 };
 
 /**

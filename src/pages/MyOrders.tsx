@@ -63,19 +63,32 @@ const MyOrders = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Load orders from localStorage
+  // Load orders from localStorage - strictly filtered by current user email
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && user.email) {
+      console.log("Loading orders for user:", user.email);
+      
+      // Get all orders and strictly filter by the current user's email
       const allOrders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
-      // Filter orders by the current user's email
-      const userOrders = allOrders.filter(order => order.userEmail === user.email);
+      const userOrders = allOrders.filter(order => 
+        order.userEmail && order.userEmail === user.email
+      );
+      
+      console.log(`Found ${userOrders.length} orders for user ${user.email}`);
       setOrders(userOrders);
       
-      // Load custom requests
+      // Load custom requests - also strictly filtered
       const allRequests: CustomRequest[] = JSON.parse(localStorage.getItem('customRequests') || '[]');
-      // Filter by user email
-      const userRequests = allRequests.filter(request => request.userEmail === user.email);
+      const userRequests = allRequests.filter(request => 
+        request.userEmail && request.userEmail === user.email
+      );
+      
+      console.log(`Found ${userRequests.length} custom requests for user ${user.email}`);
       setCustomRequests(userRequests);
+    } else {
+      // If no authenticated user or no email, show empty arrays
+      setOrders([]);
+      setCustomRequests([]);
     }
   }, [isAuthenticated, user]);
 
