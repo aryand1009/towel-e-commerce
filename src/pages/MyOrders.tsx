@@ -30,6 +30,7 @@ interface Order {
   total: number;
   date: string;
   status: string;
+  userEmail?: string;
 }
 
 interface CustomRequest {
@@ -64,19 +65,19 @@ const MyOrders = () => {
 
   // Load orders from localStorage
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       const allOrders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
-      // In a real app, filter orders by user ID
-      // For this demo, we're showing all orders
-      setOrders(allOrders);
+      // Filter orders by the current user's email
+      const userOrders = allOrders.filter(order => order.userEmail === user.email);
+      setOrders(userOrders);
       
       // Load custom requests
       const allRequests: CustomRequest[] = JSON.parse(localStorage.getItem('customRequests') || '[]');
-      // In a real app, filter by user ID
-      // For this demo, we're showing all custom requests
-      setCustomRequests(allRequests);
+      // Filter by user email
+      const userRequests = allRequests.filter(request => request.userEmail === user.email);
+      setCustomRequests(userRequests);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   if (!isAuthenticated) {
     return null;

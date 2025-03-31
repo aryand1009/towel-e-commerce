@@ -15,6 +15,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { ArrowLeft, Search } from 'lucide-react';
+import { getUserByEmail } from '@/services/userService';
 
 interface Order {
   id: string;
@@ -40,13 +41,28 @@ const AllOrders = () => {
     }
   }, [isAdmin, navigate]);
 
-  // Load orders from localStorage
+  // Load orders from localStorage and add user names
   useEffect(() => {
     const savedOrders = localStorage.getItem('orders');
     if (savedOrders) {
       const parsedOrders = JSON.parse(savedOrders);
-      setOrders(parsedOrders);
-      setFilteredOrders(parsedOrders);
+      
+      // Enhance orders with user names if available
+      const enhancedOrders = parsedOrders.map((order: Order) => {
+        if (order.userEmail) {
+          const user = getUserByEmail(order.userEmail);
+          if (user && user.name) {
+            return {
+              ...order,
+              userName: user.name
+            };
+          }
+        }
+        return order;
+      });
+      
+      setOrders(enhancedOrders);
+      setFilteredOrders(enhancedOrders);
     }
   }, []);
 
@@ -86,7 +102,15 @@ const AllOrders = () => {
       })
     );
     
-    localStorage.setItem('orders', JSON.stringify(updatedOrders));
+    // Update in localStorage
+    const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const updatedSavedOrders = savedOrders.map((order: Order) => {
+      if (order.id === orderId) {
+        return { ...order, status: newStatus };
+      }
+      return order;
+    });
+    localStorage.setItem('orders', JSON.stringify(updatedSavedOrders));
   };
 
   return (
@@ -143,7 +167,7 @@ const AllOrders = () => {
                       {order.id.substring(0, 10)}...
                     </Link>
                   </TableCell>
-                  <TableCell>{order.userName || order.userEmail || "Unknown"}</TableCell>
+                  <TableCell>{order.userName || (order.userEmail || "Unknown")}</TableCell>
                   <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                   <TableCell>{order.items.length} items</TableCell>
                   <TableCell>₹{order.total.toFixed(2)}</TableCell>

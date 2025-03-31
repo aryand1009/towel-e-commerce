@@ -84,6 +84,26 @@ export const getUserByCredentials = (email: string, password: string): User | nu
 };
 
 /**
+ * Get a user by email
+ */
+export const getUserByEmail = (email: string): User | null => {
+  const users = getStoredUsers();
+  const userRecord = users[email];
+  
+  if (!userRecord) {
+    return null;
+  }
+  
+  return {
+    id: userRecord.id,
+    email: userRecord.email,
+    name: userRecord.name,
+    phone: userRecord.phone,
+    role: userRecord.role,
+  };
+};
+
+/**
  * Delete a user from the database
  */
 export const deleteUserFromDatabase = (email: string): boolean => {
