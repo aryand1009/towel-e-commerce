@@ -19,6 +19,8 @@ import About from "./pages/About";
 import TrackOrder from "./pages/TrackOrder";
 import MyOrders from "./pages/MyOrders";
 import TowelManagement from "./pages/TowelManagement";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,8 @@ const App = () => (
             <Route path="/track-order" element={<TrackOrder />} />
             <Route path="/my-orders" element={<MyOrders />} />
             <Route path="/towel-management" element={<TowelManagement />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

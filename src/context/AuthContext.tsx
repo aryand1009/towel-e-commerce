@@ -6,7 +6,8 @@ import {
   saveUserToDatabase, 
   saveUserSession, 
   getUserSession, 
-  clearUserSession 
+  clearUserSession,
+  deleteUserFromDatabase
 } from '@/services/userService';
 
 // Create the auth context
@@ -62,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Signup function
-  const signup = async (email: string, name: string, password: string, role: UserRole): Promise<boolean> => {
+  const signup = async (email: string, name: string, password: string, role: UserRole, phone?: string): Promise<boolean> => {
     try {
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -78,8 +79,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      // Save user to database
-      const newUser = saveUserToDatabase(email, password, role, name);
+      // Save user to database with phone number
+      const newUser = saveUserToDatabase(email, password, role, name, phone);
 
       // Save to state and localStorage for session
       setUser(newUser);
@@ -100,6 +101,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearUserSession();
   };
 
+  // Delete account function
+  const deleteAccount = async (): Promise<boolean> => {
+    try {
+      if (!user) return false;
+      
+      // Delete user from database
+      const success = deleteUserFromDatabase(user.email);
+      
+      if (success) {
+        // Clear user session
+        logout();
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Delete account error:', error);
+      return false;
+    }
+  };
+
   const isAdmin = user?.role === 'admin';
 
   return (
@@ -109,7 +131,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAdmin,
       login, 
       signup,
-      logout 
+      logout,
+      deleteAccount 
     }}>
       {children}
     </AuthContext.Provider>

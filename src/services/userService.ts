@@ -34,7 +34,8 @@ export const saveUserToDatabase = (
   email: string, 
   password: string, 
   role: UserRole, 
-  name?: string
+  name?: string,
+  phone?: string
 ): User => {
   const users = getStoredUsers();
   
@@ -45,7 +46,8 @@ export const saveUserToDatabase = (
     email,
     password, // In a real app, this would be hashed!
     role,
-    ...(name ? { name } : {})
+    ...(name ? { name } : {}),
+    ...(phone ? { phone } : {})
   };
   
   // Save updated users
@@ -56,7 +58,8 @@ export const saveUserToDatabase = (
     id: userId,
     email,
     role,
-    ...(name ? { name } : {})
+    ...(name ? { name } : {}),
+    ...(phone ? { phone } : {})
   };
 };
 
@@ -75,8 +78,38 @@ export const getUserByCredentials = (email: string, password: string): User | nu
     id: userRecord.id,
     email: userRecord.email,
     name: userRecord.name,
+    phone: userRecord.phone,
     role: userRecord.role,
   };
+};
+
+/**
+ * Delete a user from the database
+ */
+export const deleteUserFromDatabase = (email: string): boolean => {
+  const users = getStoredUsers();
+  
+  if (!users[email]) {
+    return false;
+  }
+  
+  // Delete user from database
+  delete users[email];
+  
+  // Save updated users
+  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  
+  // Clear any orders associated with this user
+  const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+  const updatedOrders = orders.filter((order: any) => order.userEmail !== email);
+  localStorage.setItem('orders', JSON.stringify(updatedOrders));
+  
+  // Clear any custom requests associated with this user
+  const requests = JSON.parse(localStorage.getItem('customRequests') || '[]');
+  const updatedRequests = requests.filter((request: any) => request.userEmail !== email);
+  localStorage.setItem('customRequests', JSON.stringify(updatedRequests));
+  
+  return true;
 };
 
 /**

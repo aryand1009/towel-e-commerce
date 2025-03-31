@@ -22,6 +22,8 @@ interface Order {
   total: number;
   date: string;
   status: string;
+  userName?: string;
+  userEmail?: string;
 }
 
 const AllOrders = () => {
@@ -57,7 +59,9 @@ const AllOrders = () => {
       setFilteredOrders(orders);
     } else {
       const filtered = orders.filter(order => 
-        order.id.toLowerCase().includes(term.toLowerCase())
+        order.id.toLowerCase().includes(term.toLowerCase()) ||
+        (order.userName && order.userName.toLowerCase().includes(term.toLowerCase())) ||
+        (order.userEmail && order.userEmail.toLowerCase().includes(term.toLowerCase()))
       );
       setFilteredOrders(filtered);
     }
@@ -110,7 +114,7 @@ const AllOrders = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-towel-gray h-4 w-4" />
             <Input
               className="pl-10 w-[250px]"
-              placeholder="Search by order ID..."
+              placeholder="Search by order ID or customer..."
               value={searchTerm}
               onChange={handleSearch}
             />
@@ -123,6 +127,7 @@ const AllOrders = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Order ID</TableHead>
+                <TableHead>Customer</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Items</TableHead>
                 <TableHead>Total</TableHead>
@@ -138,6 +143,7 @@ const AllOrders = () => {
                       {order.id.substring(0, 10)}...
                     </Link>
                   </TableCell>
+                  <TableCell>{order.userName || order.userEmail || "Unknown"}</TableCell>
                   <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                   <TableCell>{order.items.length} items</TableCell>
                   <TableCell>₹{order.total.toFixed(2)}</TableCell>

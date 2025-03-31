@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -50,17 +49,9 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
-      const success = await signup(values.email, values.name, values.password, 'customer');
+      const success = await signup(values.email, values.name, values.password, 'customer', values.phone);
       
       if (success) {
-        // Store phone number in localStorage as we don't have a backend
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const userIndex = users.findIndex((u: any) => u.email === values.email);
-        if (userIndex >= 0) {
-          users[userIndex].phone = values.phone;
-          localStorage.setItem('users', JSON.stringify(users));
-        }
-        
         toast({
           title: "Account Created",
           description: "Your account has been successfully created and you're now logged in!",
