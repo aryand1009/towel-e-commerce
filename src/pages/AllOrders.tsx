@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -61,7 +60,6 @@ const AllOrders = () => {
         return order;
       });
       
-      console.log("Enhanced orders with user names:", enhancedOrders);
       setOrders(enhancedOrders);
       setFilteredOrders(enhancedOrders);
     }
