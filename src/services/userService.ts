@@ -54,7 +54,13 @@ export const saveUserToDatabase = (
   localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
   
   // Initialize empty order history for new users
-  initializeEmptyUserData(email);
+  const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+  localStorage.setItem('orders', JSON.stringify(orders));
+  
+  const customRequests = JSON.parse(localStorage.getItem('customRequests') || '[]');
+  localStorage.setItem('customRequests', JSON.stringify(customRequests));
+  
+  console.log(`Initialized empty data store for new user: ${email}`);
   
   // Return user data (without password)
   return {

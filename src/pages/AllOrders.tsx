@@ -61,6 +61,7 @@ const AllOrders = () => {
         return order;
       });
       
+      console.log("Enhanced orders with user names:", enhancedOrders);
       setOrders(enhancedOrders);
       setFilteredOrders(enhancedOrders);
     }
