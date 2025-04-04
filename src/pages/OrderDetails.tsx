@@ -6,6 +6,7 @@ import { ShoppingBag, ArrowLeft, Package, User, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getUserByEmail } from '@/services/userService';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/components/ui/use-toast';
 
 interface OrderItem {
   id: string;
@@ -39,35 +40,63 @@ const OrderDetails = () => {
   const isAdminView = window.location.pathname.includes('/admin/orders');
 
   useEffect(() => {
-    setLoading(true);
-    // Get orders from localStorage
-    const orders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
-    const foundOrder = orders.find(order => order.id === orderId);
-    
-    if (foundOrder) {
-      setOrder(foundOrder);
-      
-      // Get customer details if available
-      if (foundOrder.userEmail) {
-        const userData = getUserByEmail(foundOrder.userEmail);
-        if (userData) {
-          setCustomer({
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone
+    const loadOrderDetails = () => {
+      setLoading(true);
+      try {
+        // Get orders from localStorage
+        const orders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
+        const foundOrder = orders.find(order => order.id === orderId);
+        
+        if (foundOrder) {
+          setOrder(foundOrder);
+          
+          // Get customer details if available
+          if (foundOrder.userEmail) {
+            const userData = getUserByEmail(foundOrder.userEmail);
+            if (userData) {
+              setCustomer({
+                name: userData.name,
+                email: userData.email,
+                phone: userData.phone
+              });
+            }
+          } else if (user && !isAdminView) {
+            // Use the logged-in user's details if this isn't an admin view
+            setCustomer({
+              name: user.name,
+              email: user.email,
+              phone: user.phone
+            });
+          }
+        } else {
+          toast({
+            title: "Order not found",
+            description: "The requested order could not be found.",
+            variant: "destructive",
           });
         }
-      } else if (user && !isAdminView) {
-        // Use the logged-in user's details if this isn't an admin view
-        setCustomer({
-          name: user.name,
-          email: user.email,
-          phone: user.phone
+      } catch (error) {
+        console.error("Error loading order details:", error);
+        toast({
+          title: "Error loading order details",
+          description: "There was a problem loading the order details. Please try again.",
+          variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
+    };
+    
+    if (orderId) {
+      loadOrderDetails();
     }
     
-    setLoading(false);
+    // Listen for storage events to update order details in real-time
+    window.addEventListener('storage', loadOrderDetails);
+    
+    return () => {
+      window.removeEventListener('storage', loadOrderDetails);
+    };
   }, [orderId, user, isAdminView]);
 
   if (loading) {

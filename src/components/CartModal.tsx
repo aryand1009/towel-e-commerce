@@ -3,6 +3,7 @@ import { ShoppingBag, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/context/AuthContext';
 
 export interface CartItem {
   id: string;
@@ -24,6 +25,7 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const handleCheckout = () => {
     if (cartItems.length === 0) {
@@ -35,6 +37,18 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
       return;
     }
     
+    if (!user) {
+      toast({
+        title: "Please log in",
+        description: "You need to be logged in to place an order",
+        variant: "destructive"
+      });
+      
+      onClose();
+      navigate('/login');
+      return;
+    }
+    
     // Save order to localStorage
     const orderId = `order-${Date.now()}`;
     const order = {
@@ -42,7 +56,8 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
       items: cartItems,
       total: subtotal,
       date: new Date().toISOString(),
-      status: "Processing"
+      status: "Processing",
+      userEmail: user.email
     };
     
     // Get existing orders or initialize empty array

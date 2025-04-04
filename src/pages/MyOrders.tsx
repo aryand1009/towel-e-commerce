@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -64,43 +65,56 @@ const MyOrders = () => {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    if (isAuthenticated && user && user.email) {
-      setLoading(true);
-      console.log("Loading orders for user:", user.email);
-      
-      try {
-        const allOrders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
-        const userOrders = allOrders.filter(order => 
-          order.userEmail && order.userEmail === user.email
-        );
+    const loadOrderData = () => {
+      if (isAuthenticated && user && user.email) {
+        setLoading(true);
+        console.log("Loading orders for user:", user.email);
         
-        console.log(`Found ${userOrders.length} orders for user ${user.email}`);
-        setOrders(userOrders);
-        
-        const allRequests: CustomRequest[] = JSON.parse(localStorage.getItem('customRequests') || '[]');
-        const userRequests = allRequests.filter(request => 
-          request.userEmail && request.userEmail === user.email
-        );
-        
-        console.log(`Found ${userRequests.length} custom requests for user ${user.email}`);
-        setCustomRequests(userRequests);
-      } catch (error) {
-        console.error("Error loading orders:", error);
-        toast({
-          title: "Error loading orders",
-          description: "There was a problem loading your orders. Please try again.",
-          variant: "destructive",
-        });
+        try {
+          // Load all orders from localStorage
+          const allOrders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
+          
+          // Filter orders for current user only by matching email
+          const userOrders = allOrders.filter(order => 
+            order.userEmail === user.email
+          );
+          
+          console.log(`Found ${userOrders.length} orders for user ${user.email}`);
+          setOrders(userOrders);
+          
+          // Handle custom requests similarly
+          const allRequests: CustomRequest[] = JSON.parse(localStorage.getItem('customRequests') || '[]');
+          const userRequests = allRequests.filter(request => 
+            request.userEmail === user.email
+          );
+          
+          console.log(`Found ${userRequests.length} custom requests for user ${user.email}`);
+          setCustomRequests(userRequests);
+        } catch (error) {
+          console.error("Error loading orders:", error);
+          toast({
+            title: "Error loading orders",
+            description: "There was a problem loading your orders. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setLoading(false);
+        }
+      } else {
         setOrders([]);
         setCustomRequests([]);
-      } finally {
         setLoading(false);
       }
-    } else {
-      setOrders([]);
-      setCustomRequests([]);
-      setLoading(false);
-    }
+    };
+    
+    loadOrderData();
+    
+    // Listen for storage events to update orders in real-time
+    window.addEventListener('storage', loadOrderData);
+    
+    return () => {
+      window.removeEventListener('storage', loadOrderData);
+    };
   }, [isAuthenticated, user]);
 
   if (!isAuthenticated) {
