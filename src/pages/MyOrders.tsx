@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -15,6 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, ExternalLink, PackageCheck, FileText, Timer, AlertCircle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 interface OrderItem {
   id: string;
@@ -55,40 +55,51 @@ const MyOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [customRequests, setCustomRequests] = useState<CustomRequest[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
 
-  // Load orders from localStorage - strictly filtered by current user email
   useEffect(() => {
     if (isAuthenticated && user && user.email) {
+      setLoading(true);
       console.log("Loading orders for user:", user.email);
       
-      // Get all orders and strictly filter by the current user's email
-      const allOrders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
-      const userOrders = allOrders.filter(order => 
-        order.userEmail && order.userEmail === user.email
-      );
-      
-      console.log(`Found ${userOrders.length} orders for user ${user.email}`);
-      setOrders(userOrders);
-      
-      // Load custom requests - also strictly filtered
-      const allRequests: CustomRequest[] = JSON.parse(localStorage.getItem('customRequests') || '[]');
-      const userRequests = allRequests.filter(request => 
-        request.userEmail && request.userEmail === user.email
-      );
-      
-      console.log(`Found ${userRequests.length} custom requests for user ${user.email}`);
-      setCustomRequests(userRequests);
+      try {
+        const allOrders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
+        const userOrders = allOrders.filter(order => 
+          order.userEmail && order.userEmail === user.email
+        );
+        
+        console.log(`Found ${userOrders.length} orders for user ${user.email}`);
+        setOrders(userOrders);
+        
+        const allRequests: CustomRequest[] = JSON.parse(localStorage.getItem('customRequests') || '[]');
+        const userRequests = allRequests.filter(request => 
+          request.userEmail && request.userEmail === user.email
+        );
+        
+        console.log(`Found ${userRequests.length} custom requests for user ${user.email}`);
+        setCustomRequests(userRequests);
+      } catch (error) {
+        console.error("Error loading orders:", error);
+        toast({
+          title: "Error loading orders",
+          description: "There was a problem loading your orders. Please try again.",
+          variant: "destructive",
+        });
+        setOrders([]);
+        setCustomRequests([]);
+      } finally {
+        setLoading(false);
+      }
     } else {
-      // If no authenticated user or no email, show empty arrays
       setOrders([]);
       setCustomRequests([]);
+      setLoading(false);
     }
   }, [isAuthenticated, user]);
 
@@ -109,158 +120,163 @@ const MyOrders = () => {
           <h1 className="text-3xl font-semibold">My Orders</h1>
         </div>
 
-        <Tabs defaultValue="regular" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="regular" className="flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4" />
-              Regular Orders
-            </TabsTrigger>
-            <TabsTrigger value="custom" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Custom Designs
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="regular">
-            {orders.length > 0 ? (
-              <div className="space-y-6">
-                <Tabs defaultValue="all" className="w-full">
-                  <TabsList className="mb-6">
-                    <TabsTrigger value="all">All Orders</TabsTrigger>
-                    <TabsTrigger value="processing">Processing</TabsTrigger>
-                    <TabsTrigger value="shipped">Shipped</TabsTrigger>
-                    <TabsTrigger value="delivered">Delivered</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="all">
-                    <OrderList orders={orders} />
-                  </TabsContent>
-                  
-                  <TabsContent value="processing">
-                    <OrderList orders={orders.filter(order => 
-                      order.status.toLowerCase() === 'processing'
-                    )} />
-                  </TabsContent>
-                  
-                  <TabsContent value="shipped">
-                    <OrderList orders={orders.filter(order => 
-                      order.status.toLowerCase() === 'shipped'
-                    )} />
-                  </TabsContent>
-                  
-                  <TabsContent value="delivered">
-                    <OrderList orders={orders.filter(order => 
-                      order.status.toLowerCase() === 'delivered'
-                    )} />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            ) : (
-              <div className="text-center py-12 border rounded-lg border-dashed">
-                <PackageCheck className="h-12 w-12 mx-auto text-towel-gray mb-4" />
-                <h3 className="text-xl font-medium mb-2">No orders yet</h3>
-                <p className="text-towel-gray mb-6">You haven't placed any orders yet.</p>
-                <Button onClick={() => navigate('/')}>
-                  Start Shopping
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="custom">
-            {customRequests.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {customRequests.map((request) => (
-                  <Card key={request.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">{request.title}</CardTitle>
-                          <CardDescription>
-                            {new Date(request.date).toLocaleDateString()} • Quantity: {request.quantity}
-                          </CardDescription>
-                        </div>
-                        <Badge
-                          variant={
-                            request.status.toLowerCase() === 'pending' ? 'secondary' :
-                            request.status.toLowerCase() === 'approved' ? 'success' :
-                            'destructive'
-                          }
-                        >
-                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {request.description}
-                        </p>
-                        {request.image && (
-                          <div className="h-24 w-full bg-gray-100 rounded overflow-hidden">
-                            <img 
-                              src={request.image} 
-                              alt="Design reference" 
-                              className="h-full w-full object-cover"
-                            />
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-pulse">Loading your orders...</div>
+          </div>
+        ) : (
+          <Tabs defaultValue="regular" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="regular" className="flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4" />
+                Regular Orders
+              </TabsTrigger>
+              <TabsTrigger value="custom" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Custom Designs
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="regular">
+              {orders.length > 0 ? (
+                <div className="space-y-6">
+                  <Tabs defaultValue="all" className="w-full">
+                    <TabsList className="mb-6">
+                      <TabsTrigger value="all">All Orders</TabsTrigger>
+                      <TabsTrigger value="processing">Processing</TabsTrigger>
+                      <TabsTrigger value="shipped">Shipped</TabsTrigger>
+                      <TabsTrigger value="delivered">Delivered</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="all">
+                      <OrderList orders={orders} />
+                    </TabsContent>
+                    
+                    <TabsContent value="processing">
+                      <OrderList orders={orders.filter(order => 
+                        order.status.toLowerCase() === 'processing'
+                      )} />
+                    </TabsContent>
+                    
+                    <TabsContent value="shipped">
+                      <OrderList orders={orders.filter(order => 
+                        order.status.toLowerCase() === 'shipped'
+                      )} />
+                    </TabsContent>
+                    
+                    <TabsContent value="delivered">
+                      <OrderList orders={orders.filter(order => 
+                        order.status.toLowerCase() === 'delivered'
+                      )} />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              ) : (
+                <div className="text-center py-12 border rounded-lg border-dashed">
+                  <PackageCheck className="h-12 w-12 mx-auto text-towel-gray mb-4" />
+                  <h3 className="text-xl font-medium mb-2">No orders yet</h3>
+                  <p className="text-towel-gray mb-6">You haven't placed any orders yet.</p>
+                  <Button onClick={() => navigate('/')}>
+                    Start Shopping
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="custom">
+              {customRequests.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {customRequests.map((request) => (
+                    <Card key={request.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg">{request.title}</CardTitle>
+                            <CardDescription>
+                              {new Date(request.date).toLocaleDateString()} • Quantity: {request.quantity}
+                            </CardDescription>
                           </div>
-                        )}
-                        
-                        {request.status === 'approved' && request.completionTime && (
-                          <div className="flex items-center gap-2 text-green-700 mt-2">
-                            <Timer className="h-4 w-4" />
-                            <p className="text-sm">
-                              Estimated completion: {request.completionTime} days
+                          <Badge
+                            variant={
+                              request.status.toLowerCase() === 'pending' ? 'secondary' :
+                              request.status.toLowerCase() === 'approved' ? 'success' :
+                              'destructive'
+                            }
+                          >
+                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {request.description}
+                          </p>
+                          {request.image && (
+                            <div className="h-24 w-full bg-gray-100 rounded overflow-hidden">
+                              <img 
+                                src={request.image} 
+                                alt="Design reference" 
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          )}
+                          
+                          {request.status === 'approved' && request.completionTime && (
+                            <div className="flex items-center gap-2 text-green-700 mt-2">
+                              <Timer className="h-4 w-4" />
+                              <p className="text-sm">
+                                Estimated completion: {request.completionTime} days
+                              </p>
+                            </div>
+                          )}
+                          
+                          {request.status === 'rejected' && request.rejectionReason && (
+                            <div className="flex items-start gap-2 text-red-700 bg-red-50 p-3 rounded mt-2">
+                              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium">Reason for rejection:</p>
+                                <p className="text-sm">{request.rejectionReason}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-between border-t pt-4">
+                        <div>
+                          <p className="text-sm text-towel-gray">Budget per item</p>
+                          <p className="font-semibold">₹{request.budget.toFixed(2)}</p>
+                        </div>
+                        {request.status.toLowerCase() === 'approved' && (
+                          <div className="text-right">
+                            <p className="text-sm text-towel-gray">Estimated delivery</p>
+                            <p className="text-sm font-medium">
+                              {request.completionTime} days
                             </p>
                           </div>
                         )}
-                        
-                        {request.status === 'rejected' && request.rejectionReason && (
-                          <div className="flex items-start gap-2 text-red-700 bg-red-50 p-3 rounded mt-2">
-                            <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-medium">Reason for rejection:</p>
-                              <p className="text-sm">{request.rejectionReason}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between border-t pt-4">
-                      <div>
-                        <p className="text-sm text-towel-gray">Budget per item</p>
-                        <p className="font-semibold">₹{request.budget.toFixed(2)}</p>
-                      </div>
-                      {request.status.toLowerCase() === 'approved' && (
-                        <div className="text-right">
-                          <p className="text-sm text-towel-gray">Estimated delivery</p>
-                          <p className="text-sm font-medium">
-                            {request.completionTime} days
-                          </p>
-                        </div>
-                      )}
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 border rounded-lg border-dashed">
-                <FileText className="h-12 w-12 mx-auto text-towel-gray mb-4" />
-                <h3 className="text-xl font-medium mb-2">No custom designs yet</h3>
-                <p className="text-towel-gray mb-6">You haven't submitted any custom design requests yet.</p>
-                <Button onClick={() => navigate('/custom-request')}>
-                  Create Custom Request
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border rounded-lg border-dashed">
+                  <FileText className="h-12 w-12 mx-auto text-towel-gray mb-4" />
+                  <h3 className="text-xl font-medium mb-2">No custom designs yet</h3>
+                  <p className="text-towel-gray mb-6">You haven't submitted any custom design requests yet.</p>
+                  <Button onClick={() => navigate('/custom-request')}>
+                    Create Custom Request
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </motion.div>
   );
 };
 
-// Helper component to display order list
 const OrderList = ({ orders }: { orders: Order[] }) => {
   if (orders.length === 0) {
     return (

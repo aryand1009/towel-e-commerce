@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, Package, User } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Package, User, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getUserByEmail } from '@/services/userService';
+import { useAuth } from '@/context/AuthContext';
 
 interface OrderItem {
   id: string;
@@ -31,9 +32,11 @@ interface CustomerDetails {
 
 const OrderDetails = () => {
   const { orderId } = useParams<{ orderId: string }>();
+  const { user } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [customer, setCustomer] = useState<CustomerDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const isAdminView = window.location.pathname.includes('/admin/orders');
 
   useEffect(() => {
     setLoading(true);
@@ -46,19 +49,26 @@ const OrderDetails = () => {
       
       // Get customer details if available
       if (foundOrder.userEmail) {
-        const user = getUserByEmail(foundOrder.userEmail);
-        if (user) {
+        const userData = getUserByEmail(foundOrder.userEmail);
+        if (userData) {
           setCustomer({
-            name: user.name,
-            email: user.email,
-            phone: user.phone
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone
           });
         }
+      } else if (user && !isAdminView) {
+        // Use the logged-in user's details if this isn't an admin view
+        setCustomer({
+          name: user.name,
+          email: user.email,
+          phone: user.phone
+        });
       }
     }
     
     setLoading(false);
-  }, [orderId]);
+  }, [orderId, user, isAdminView]);
 
   if (loading) {
     return (
@@ -80,6 +90,8 @@ const OrderDetails = () => {
     );
   }
 
+  const backLink = isAdminView ? "/admin/orders" : "/my-orders";
+
   return (
     <motion.div 
       className="container mx-auto py-24 px-4"
@@ -90,7 +102,7 @@ const OrderDetails = () => {
       <div className="glass-panel p-8 rounded-lg max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <Link to="/admin/orders">
+            <Link to={backLink}>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -117,8 +129,11 @@ const OrderDetails = () => {
                 <p className="text-towel-gray">Email</p>
                 <p className="font-medium">{customer.email}</p>
               </div>
-              <div>
-                <p className="text-towel-gray">Phone</p>
+              <div className="flex flex-col">
+                <div className="text-towel-gray flex items-center gap-1">
+                  <Phone className="h-3.5 w-3.5" />
+                  <span>Phone</span>
+                </div>
                 <p className="font-medium">{customer.phone || "Not provided"}</p>
               </div>
             </div>
