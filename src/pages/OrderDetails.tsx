@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, Package } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Package, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getUserByEmail } from '@/services/userService';
 
 interface OrderItem {
   id: string;
@@ -19,11 +20,19 @@ interface Order {
   total: number;
   date: string;
   status: string;
+  userEmail?: string;
+}
+
+interface CustomerDetails {
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
 const OrderDetails = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<Order | null>(null);
+  const [customer, setCustomer] = useState<CustomerDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,6 +43,18 @@ const OrderDetails = () => {
     
     if (foundOrder) {
       setOrder(foundOrder);
+      
+      // Get customer details if available
+      if (foundOrder.userEmail) {
+        const user = getUserByEmail(foundOrder.userEmail);
+        if (user) {
+          setCustomer({
+            name: user.name,
+            email: user.email,
+            phone: user.phone
+          });
+        }
+      }
     }
     
     setLoading(false);
@@ -69,7 +90,7 @@ const OrderDetails = () => {
       <div className="glass-panel p-8 rounded-lg max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <Link to="/">
+            <Link to="/admin/orders">
               <Button variant="ghost" size="icon" className="rounded-full">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -80,6 +101,29 @@ const OrderDetails = () => {
             {order.status}
           </div>
         </div>
+        
+        {customer && (
+          <div className="mb-8 bg-towel-blue/10 p-4 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <User className="h-5 w-5" />
+              <h2 className="text-lg font-medium">Customer Information</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="text-towel-gray">Name</p>
+                <p className="font-medium">{customer.name || "Not provided"}</p>
+              </div>
+              <div>
+                <p className="text-towel-gray">Email</p>
+                <p className="font-medium">{customer.email}</p>
+              </div>
+              <div>
+                <p className="text-towel-gray">Phone</p>
+                <p className="font-medium">{customer.phone || "Not provided"}</p>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="mb-8">
           <div className="flex flex-wrap justify-between gap-4 text-sm text-towel-gray">
