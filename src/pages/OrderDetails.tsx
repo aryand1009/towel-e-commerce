@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, Package, User, Phone } from 'lucide-react';
+import { Package, User, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getUserByEmail } from '@/services/userService';
 import { useAuth } from '@/context/AuthContext';
@@ -130,14 +130,7 @@ const OrderDetails = () => {
     >
       <div className="glass-panel p-8 rounded-lg max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Link to={backLink}>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-semibold">Order Details</h1>
-          </div>
+          <h1 className="text-2xl font-semibold">Order Details</h1>
           <div className="bg-towel-beige/30 px-4 py-2 rounded-full text-sm font-medium">
             {order.status}
           </div>
@@ -169,6 +162,7 @@ const OrderDetails = () => {
           </div>
         )}
         
+        {/* Order summary information */}
         <div className="mb-8">
           <div className="flex flex-wrap justify-between gap-4 text-sm text-towel-gray">
             <div>
@@ -192,6 +186,7 @@ const OrderDetails = () => {
           </div>
         </div>
         
+        {/* Order items */}
         <div className="mb-8">
           <h2 className="text-xl font-medium mb-4">Order Items</h2>
           <div className="bg-white rounded-lg shadow divide-y">
@@ -210,6 +205,7 @@ const OrderDetails = () => {
           </div>
         </div>
         
+        {/* Payment summary */}
         <div className="bg-towel-beige/20 p-6 rounded-lg">
           <div className="flex justify-between mb-2">
             <span>Subtotal</span>
@@ -231,6 +227,13 @@ const OrderDetails = () => {
             <p className="font-medium text-lg text-foreground">Thank you for your order!</p>
             <p className="text-sm">You will receive an update when your order ships.</p>
           </div>
+        </div>
+
+        {/* Back button for navigation - now shown at the bottom instead */}
+        <div className="mt-8 flex justify-center">
+          <Link to={backLink}>
+            <Button variant="outline">Back to Orders</Button>
+          </Link>
         </div>
       </div>
     </motion.div>

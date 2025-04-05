@@ -14,8 +14,20 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Trash } from 'lucide-react';
 import { getUserByEmail } from '@/services/userService';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from '@/components/ui/use-toast';
 
 interface Order {
   id: string;
@@ -111,6 +123,25 @@ const AllOrders = () => {
     localStorage.setItem('orders', JSON.stringify(updatedSavedOrders));
   };
 
+  // Handle order deletion
+  const deleteOrder = (orderId: string) => {
+    // Remove from state
+    const updatedOrders = orders.filter(order => order.id !== orderId);
+    setOrders(updatedOrders);
+    setFilteredOrders(filteredOrders.filter(order => order.id !== orderId));
+    
+    // Remove from localStorage
+    const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const updatedSavedOrders = savedOrders.filter((order: Order) => order.id !== orderId);
+    localStorage.setItem('orders', JSON.stringify(updatedSavedOrders));
+    
+    // Show success toast
+    toast({
+      title: "Order deleted",
+      description: `Order #${orderId.substring(0, 10)}... has been deleted successfully.`,
+    });
+  };
+
   return (
     <motion.div 
       className="container mx-auto py-24 px-4"
@@ -179,7 +210,7 @@ const AllOrders = () => {
                       <option value="Cancelled">Cancelled</option>
                     </select>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right flex items-center justify-end gap-2">
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -187,6 +218,30 @@ const AllOrders = () => {
                     >
                       View Details
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Order</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this order? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            variant="destructive"
+                            onClick={() => deleteOrder(order.id)}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
