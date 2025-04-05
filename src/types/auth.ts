@@ -24,6 +24,7 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
   login: (email: string, password: string, role: UserRole) => Promise<boolean>;
   signup: (email: string, name: string, password: string, role: UserRole, phone?: string) => Promise<boolean>;
   logout: () => void;

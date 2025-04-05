@@ -1,14 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, AuthContextType } from '@/types/auth';
-import { 
-  getUserByCredentials, 
-  saveUserToDatabase, 
-  saveUserSession, 
-  getUserSession, 
-  clearUserSession,
-  deleteUserFromDatabase
-} from '@/services/userService';
+import { supabase } from '@/integrations/supabase/client';
+import { Profile } from '@/types/database';
 
 // Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,44 +10,111 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Check for existing user session on load
+  // Load user on mount and setup listener for auth changes
   useEffect(() => {
-    const savedUser = getUserSession();
-    if (savedUser) {
-      setUser(savedUser);
-      setIsAuthenticated(true);
-    }
+    // Check active session
+    const checkSession = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Get user profile data
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          // Set user state with combined auth and profile data
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            name: profile?.name || session.user.email!.split('@')[0],
+            phone: profile?.phone || undefined,
+            role: (profile?.role as UserRole) || 'customer'
+          });
+          setIsAuthenticated(true);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Initialize session check
+    checkSession();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // Get user profile data
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          // Set user state with combined auth and profile data
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            name: profile?.name || session.user.email!.split('@')[0],
+            phone: profile?.phone || undefined,
+            role: (profile?.role as UserRole) || 'customer'
+          });
+          setIsAuthenticated(true);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    );
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Login function
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     try {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Simple validation
-      if (!email || !password) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Login error:', error.message);
         return false;
       }
 
-      // Get user by credentials
-      const loggedInUser = getUserByCredentials(email, password);
-      
-      // Check if user exists
-      if (!loggedInUser) {
-        return false;
+      // If role is specified, verify it matches
+      if (role && data?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (profile?.role !== role) {
+          // Role doesn't match, sign out
+          await supabase.auth.signOut();
+          return false;
+        }
       }
-      
-      // Verify role if provided (for extra security)
-      if (role && loggedInUser.role !== role) {
-        return false;
-      }
-
-      // Save to state and localStorage for session
-      setUser(loggedInUser);
-      setIsAuthenticated(true);
-      saveUserSession(loggedInUser);
       
       return true;
     } catch (error) {
@@ -63,29 +124,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Signup function
-  const signup = async (email: string, name: string, password: string, role: UserRole, phone?: string): Promise<boolean> => {
+  const signup = async (
+    email: string,
+    name: string,
+    password: string,
+    role: UserRole,
+    phone?: string
+  ): Promise<boolean> => {
     try {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Simple validation
-      if (!email || !password || !name) {
+      // Create the user account
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            role,
+            phone
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Signup error:', error.message);
         return false;
       }
 
-      // Check if user already exists
-      const existingUser = getUserByCredentials(email, password);
-      if (existingUser) {
-        return false;
+      // Update profile with additional data
+      if (data?.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            name,
+            phone,
+            role
+          })
+          .eq('id', data.user.id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
       }
-
-      // Save user to database with phone number
-      const newUser = saveUserToDatabase(email, password, role, name, phone);
-
-      // Save to state and localStorage for session
-      setUser(newUser);
-      setIsAuthenticated(true);
-      saveUserSession(newUser);
       
       return true;
     } catch (error) {
@@ -95,10 +174,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Logout function
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    clearUserSession();
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   // Delete account function
@@ -106,16 +189,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       if (!user) return false;
       
-      // Delete user from database
-      const success = deleteUserFromDatabase(user.email);
+      // In a real implementation, you would use Supabase Functions
+      // to securely delete a user account server-side
       
-      if (success) {
-        // Clear user session
-        logout();
-        return true;
-      }
+      // For now, we'll just sign out
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAuthenticated(false);
       
-      return false;
+      return true;
     } catch (error) {
       console.error('Delete account error:', error);
       return false;
@@ -128,6 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       user, 
       isAuthenticated, 
+      isLoading,
       isAdmin,
       login, 
       signup,

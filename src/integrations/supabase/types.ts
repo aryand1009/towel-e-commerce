@@ -9,7 +9,227 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cart: {
+        Row: {
+          added_at: string | null
+          id: string
+          quantity: number
+          towel_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          id?: string
+          quantity?: number
+          towel_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          id?: string
+          quantity?: number
+          towel_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_towel_id_fkey"
+            columns: ["towel_id"]
+            isOneToOne: false
+            referencedRelation: "towels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_requests: {
+        Row: {
+          budget: number | null
+          completion_time: number | null
+          created_at: string | null
+          description: string
+          id: string
+          image: string | null
+          phone: string | null
+          quantity: number
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget?: number | null
+          completion_time?: number | null
+          created_at?: string | null
+          description: string
+          id?: string
+          image?: string | null
+          phone?: string | null
+          quantity?: number
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget?: number | null
+          completion_time?: number | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          image?: string | null
+          phone?: string | null
+          quantity?: number
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          id: string
+          image: string | null
+          name: string
+          order_id: string
+          price: number
+          quantity: number
+          towel_id: string
+        }
+        Insert: {
+          id?: string
+          image?: string | null
+          name: string
+          order_id: string
+          price: number
+          quantity: number
+          towel_id: string
+        }
+        Update: {
+          id?: string
+          image?: string | null
+          name?: string
+          order_id?: string
+          price?: number
+          quantity?: number
+          towel_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_towel_id_fkey"
+            columns: ["towel_id"]
+            isOneToOne: false
+            referencedRelation: "towels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          id: string
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          name?: string | null
+          phone?: string | null
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      towels: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          image: string | null
+          is_bestseller: boolean | null
+          is_new: boolean | null
+          name: string
+          price: number
+          stock: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_bestseller?: boolean | null
+          is_new?: boolean | null
+          name: string
+          price: number
+          stock?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_bestseller?: boolean | null
+          is_new?: boolean | null
+          name?: string
+          price?: number
+          stock?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +238,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      order_status: "Processing" | "Shipped" | "Delivered" | "Cancelled"
+      request_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
