@@ -17,7 +17,7 @@ export const createOrder = async (
     .rpc('create_order', {
       order_data: order,
       items_data: orderItems
-    } as unknown as CreateOrderParams);
+    } as CreateOrderParams);
 
   if (error) {
     console.error('Error creating order:', error);
