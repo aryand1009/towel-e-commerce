@@ -11,7 +11,7 @@ export const createOrder = async (
     .rpc('create_order', {
       order_data: order,
       items_data: orderItems
-    } as any); // Use type assertion to any to bypass TypeScript's strict checking
+    });
 
   if (error) {
     console.error('Error creating order:', error);
@@ -20,7 +20,7 @@ export const createOrder = async (
     // We'll create the order first
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
-      .insert([order as any])
+      .insert([order])
       .select()
       .single();
     
@@ -32,12 +32,12 @@ export const createOrder = async (
     // Then create the order items
     const orderItemsWithOrderId = orderItems.map(item => ({
       ...item,
-      order_id: (orderData as any).id
+      order_id: orderData.id
     }));
     
     const { error: itemsError } = await supabase
       .from('order_items')
-      .insert(orderItemsWithOrderId as any);
+      .insert(orderItemsWithOrderId);
     
     if (itemsError) {
       console.error('Error creating order items manually:', itemsError);
