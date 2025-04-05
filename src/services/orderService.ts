@@ -2,6 +2,12 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Order, OrderInsert, OrderItem, OrderItemInsert, OrderStatus } from '@/types/database';
 
+// Define an interface for our RPC function parameters
+interface CreateOrderParams {
+  order_data: OrderInsert;
+  items_data: OrderItemInsert[];
+}
+
 export const createOrder = async (
   order: OrderInsert,
   orderItems: OrderItemInsert[]
@@ -11,7 +17,7 @@ export const createOrder = async (
     .rpc('create_order', {
       order_data: order,
       items_data: orderItems
-    } as any); // Using type assertion to bypass TypeScript's type checking for RPC
+    } as unknown as CreateOrderParams);
 
   if (error) {
     console.error('Error creating order:', error);
