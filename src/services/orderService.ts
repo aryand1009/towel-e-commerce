@@ -28,6 +28,11 @@ export const getOrderById = (orderId: string): Order | null => {
 // Save orders to localStorage
 export const saveOrders = (orders: Order[]): void => {
   localStorage.setItem('orders', JSON.stringify(orders));
+  
+  // If no orders left, clear sales data
+  if (orders.length === 0) {
+    clearSalesData();
+  }
 };
 
 // Delete an order and update sales data
@@ -77,6 +82,38 @@ const updateSalesDataAfterDeletion = (deletedOrder: Order): void => {
         delete salesData[category];
       }
     }
+  });
+  
+  // Save updated sales data
+  localStorage.setItem('salesData', JSON.stringify(salesData));
+};
+
+// Clear all sales data
+export const clearSalesData = (): void => {
+  localStorage.removeItem('salesData');
+};
+
+// Synchronize sales data with current orders
+export const syncSalesDataWithOrders = (): void => {
+  const orders = getAllOrders();
+  
+  // If no orders, clear sales data
+  if (orders.length === 0) {
+    clearSalesData();
+    return;
+  }
+  
+  // Recalculate sales data from scratch based on existing orders
+  const salesData: SalesData = {};
+  
+  orders.forEach(order => {
+    order.items.forEach(item => {
+      const category = item.category || 'Other';
+      if (!salesData[category]) {
+        salesData[category] = 0;
+      }
+      salesData[category] += item.price * item.quantity;
+    });
   });
   
   // Save updated sales data

@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteOrder } from '@/services/orderService';
+import { deleteOrder, syncSalesDataWithOrders } from '@/services/orderService';
 import { toast } from '@/components/ui/use-toast';
 
 interface OrderActionsProps {
@@ -27,6 +27,9 @@ const OrderActions: React.FC<OrderActionsProps> = ({ orderId, onOrderDeleted }) 
   
   const handleDeleteOrder = () => {
     deleteOrder(orderId);
+    
+    // Synchronize sales data after deletion
+    syncSalesDataWithOrders();
     
     // Show success toast
     toast({

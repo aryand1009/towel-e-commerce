@@ -7,6 +7,7 @@ import SalesAnalysisChart from '@/components/admin/SalesAnalysisChart';
 import RecentOrdersTable from '@/components/admin/RecentOrdersTable';
 import CustomRequestsPanel from '@/components/admin/CustomRequestsPanel';
 import AdminDashboardLayout from '@/components/admin/AdminDashboardLayout';
+import { getAllOrders, syncSalesDataWithOrders } from '@/services/orderService';
 
 interface Order {
   id: string;
@@ -37,25 +38,43 @@ const AdminDashboard = () => {
   }, [isAdmin, navigate]);
 
   useEffect(() => {
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
-    }
-
-    const savedRequests = localStorage.getItem('customRequests');
-    if (savedRequests) {
-      setCustomRequests(JSON.parse(savedRequests));
-    }
-
-    const savedSalesData = localStorage.getItem('salesData');
-    if (savedSalesData) {
-      const parsedData = JSON.parse(savedSalesData);
-      const chartData = Object.entries(parsedData).map(([name, value]) => ({
-        name,
-        value
-      }));
-      setSalesData(chartData);
-    }
+    // Synchronize sales data with orders first
+    syncSalesDataWithOrders();
+    
+    const loadData = () => {
+      // Get orders
+      const currentOrders = getAllOrders();
+      setOrders(currentOrders);
+      
+      // Get custom requests
+      const savedRequests = localStorage.getItem('customRequests');
+      if (savedRequests) {
+        setCustomRequests(JSON.parse(savedRequests));
+      }
+      
+      // Get sales data
+      const savedSalesData = localStorage.getItem('salesData');
+      if (savedSalesData) {
+        const parsedData = JSON.parse(savedSalesData);
+        const chartData = Object.entries(parsedData).map(([name, value]) => ({
+          name,
+          value
+        }));
+        setSalesData(chartData);
+      } else {
+        // If no sales data, set empty array
+        setSalesData([]);
+      }
+    };
+    
+    loadData();
+    
+    // Add event listener to detect changes in localStorage
+    window.addEventListener('storage', loadData);
+    
+    return () => {
+      window.removeEventListener('storage', loadData);
+    };
   }, []);
 
   const newOrders = orders.filter(order => order.status === 'Processing').length;
