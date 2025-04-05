@@ -104,7 +104,7 @@ export const updateOrderStatus = async (
 ): Promise<Order | null> => {
   const { data, error } = await supabase
     .from('orders')
-    .update({ status } as any)
+    .update({ status })
     .eq('id', orderId)
     .select()
     .single();
