@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { getUserByEmail } from '@/services/userService';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/use-toast';
+import { getOrderById } from '@/services/orderService';
 
 interface OrderItem {
   id: string;
@@ -31,6 +32,100 @@ interface CustomerDetails {
   phone?: string;
 }
 
+// Components
+const CustomerInformation = ({ customer }: { customer: CustomerDetails | null }) => {
+  if (!customer) return null;
+  
+  return (
+    <div className="mb-8 bg-towel-blue/10 p-4 rounded-lg">
+      <div className="flex items-center gap-2 mb-2">
+        <User className="h-5 w-5" />
+        <h2 className="text-lg font-medium">Customer Information</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <p className="text-towel-gray">Name</p>
+          <p className="font-medium">{customer.name || "Not provided"}</p>
+        </div>
+        <div>
+          <p className="text-towel-gray">Email</p>
+          <p className="font-medium">{customer.email}</p>
+        </div>
+        <div className="flex flex-col">
+          <div className="text-towel-gray flex items-center gap-1">
+            <Phone className="h-3.5 w-3.5" />
+            <span>Phone</span>
+          </div>
+          <p className="font-medium">{customer.phone || "Not provided"}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OrderSummary = ({ order }: { order: Order }) => (
+  <div className="mb-8">
+    <div className="flex flex-wrap justify-between gap-4 text-sm text-towel-gray">
+      <div>
+        <p>Order ID</p>
+        <p className="font-medium text-foreground">{order.id}</p>
+      </div>
+      <div>
+        <p>Date Placed</p>
+        <p className="font-medium text-foreground">
+          {new Date(order.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </p>
+      </div>
+      <div>
+        <p>Total Amount</p>
+        <p className="font-medium text-foreground">₹{order.total.toFixed(2)}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const OrderItems = ({ items }: { items: OrderItem[] }) => (
+  <div className="mb-8">
+    <h2 className="text-xl font-medium mb-4">Order Items</h2>
+    <div className="bg-white rounded-lg shadow divide-y">
+      {items.map(item => (
+        <div key={item.id} className="p-4 flex items-center gap-4">
+          <div className="w-16 h-16 bg-towel-beige/20 rounded-lg overflow-hidden">
+            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-medium">{item.name}</h3>
+            <p className="text-sm text-towel-gray">Qty: {item.quantity}</p>
+          </div>
+          <div className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const PaymentSummary = ({ total }: { total: number }) => (
+  <div className="bg-towel-beige/20 p-6 rounded-lg">
+    <div className="flex justify-between mb-2">
+      <span>Subtotal</span>
+      <span>₹{total.toFixed(2)}</span>
+    </div>
+    <div className="flex justify-between mb-2">
+      <span>Shipping</span>
+      <span>Free</span>
+    </div>
+    <div className="flex justify-between font-semibold text-lg pt-3 border-t">
+      <span>Total</span>
+      <span>₹{total.toFixed(2)}</span>
+    </div>
+  </div>
+);
+
+// Main component
 const OrderDetails = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const { user } = useAuth();
@@ -43,9 +138,17 @@ const OrderDetails = () => {
     const loadOrderDetails = () => {
       setLoading(true);
       try {
-        // Get orders from localStorage
-        const orders: Order[] = JSON.parse(localStorage.getItem('orders') || '[]');
-        const foundOrder = orders.find(order => order.id === orderId);
+        if (!orderId) {
+          toast({
+            title: "Order ID missing",
+            description: "No order ID was provided.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        const foundOrder = getOrderById(orderId);
         
         if (foundOrder) {
           setOrder(foundOrder);
@@ -87,9 +190,7 @@ const OrderDetails = () => {
       }
     };
     
-    if (orderId) {
-      loadOrderDetails();
-    }
+    loadOrderDetails();
     
     // Listen for storage events to update order details in real-time
     window.addEventListener('storage', loadOrderDetails);
@@ -136,90 +237,10 @@ const OrderDetails = () => {
           </div>
         </div>
         
-        {customer && (
-          <div className="mb-8 bg-towel-blue/10 p-4 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <User className="h-5 w-5" />
-              <h2 className="text-lg font-medium">Customer Information</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-towel-gray">Name</p>
-                <p className="font-medium">{customer.name || "Not provided"}</p>
-              </div>
-              <div>
-                <p className="text-towel-gray">Email</p>
-                <p className="font-medium">{customer.email}</p>
-              </div>
-              <div className="flex flex-col">
-                <div className="text-towel-gray flex items-center gap-1">
-                  <Phone className="h-3.5 w-3.5" />
-                  <span>Phone</span>
-                </div>
-                <p className="font-medium">{customer.phone || "Not provided"}</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Order summary information */}
-        <div className="mb-8">
-          <div className="flex flex-wrap justify-between gap-4 text-sm text-towel-gray">
-            <div>
-              <p>Order ID</p>
-              <p className="font-medium text-foreground">{order.id}</p>
-            </div>
-            <div>
-              <p>Date Placed</p>
-              <p className="font-medium text-foreground">
-                {new Date(order.date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </p>
-            </div>
-            <div>
-              <p>Total Amount</p>
-              <p className="font-medium text-foreground">₹{order.total.toFixed(2)}</p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Order items */}
-        <div className="mb-8">
-          <h2 className="text-xl font-medium mb-4">Order Items</h2>
-          <div className="bg-white rounded-lg shadow divide-y">
-            {order.items.map(item => (
-              <div key={item.id} className="p-4 flex items-center gap-4">
-                <div className="w-16 h-16 bg-towel-beige/20 rounded-lg overflow-hidden">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium">{item.name}</h3>
-                  <p className="text-sm text-towel-gray">Qty: {item.quantity}</p>
-                </div>
-                <div className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Payment summary */}
-        <div className="bg-towel-beige/20 p-6 rounded-lg">
-          <div className="flex justify-between mb-2">
-            <span>Subtotal</span>
-            <span>₹{order.total.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between mb-2">
-            <span>Shipping</span>
-            <span>Free</span>
-          </div>
-          <div className="flex justify-between font-semibold text-lg pt-3 border-t">
-            <span>Total</span>
-            <span>₹{order.total.toFixed(2)}</span>
-          </div>
-        </div>
+        <CustomerInformation customer={customer} />
+        <OrderSummary order={order} />
+        <OrderItems items={order.items} />
+        <PaymentSummary total={order.total} />
         
         <div className="mt-8 flex justify-center">
           <div className="flex flex-col items-center text-towel-gray">
@@ -229,7 +250,6 @@ const OrderDetails = () => {
           </div>
         </div>
 
-        {/* Back button for navigation - now shown at the bottom instead */}
         <div className="mt-8 flex justify-center">
           <Link to={backLink}>
             <Button variant="outline">Back to Orders</Button>
