@@ -11,7 +11,7 @@ export const createOrder = async (
     .rpc('create_order', {
       order_data: order,
       items_data: orderItems
-    } as any); // Simple type assertion to bypass TypeScript's type checking
+    } as {order_data: OrderInsert; items_data: OrderItemInsert[]}); // Use explicit type assertion
 
   if (error) {
     console.error('Error creating order:', error);
