@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, AuthContextType } from '@/types/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types/database';
+import { getUserSession, saveUserSession, clearUserSession } from '@/services/userService';
 
 // Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -14,7 +15,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load user on mount and setup listener for auth changes
   useEffect(() => {
-    // Check active session
+    // Check for local storage session first (for admin)
+    const localUser = getUserSession();
+    if (localUser) {
+      setUser(localUser);
+      setIsAuthenticated(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // Check Supabase session
     const checkSession = async () => {
       try {
         setIsLoading(true);
@@ -91,6 +101,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Login function
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     try {
+      // For admin login using local storage
+      if (email === 'admin@dtex.com' && password === 'admin123' && role === 'admin') {
+        // Set admin user from local storage
+        const adminUser: User = {
+          id: 'admin-1',
+          email: 'admin@dtex.com',
+          role: 'admin',
+          name: 'Admin'
+        };
+        
+        // Save to session
+        saveUserSession(adminUser);
+        setUser(adminUser);
+        setIsAuthenticated(true);
+        return true;
+      }
+
+      // Regular Supabase login
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -178,7 +206,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Logout function
   const logout = async () => {
     try {
+      // Clear local storage session (for admin)
+      clearUserSession();
+      
+      // Supabase logout
       await supabase.auth.signOut();
+      
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
@@ -191,6 +224,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       if (!user) return false;
       
+      // If admin user (from local storage)
+      if (user.id === 'admin-1') {
+        // Just clear the session
+        clearUserSession();
+        setUser(null);
+        setIsAuthenticated(false);
+        return true;
+      }
+      
+      // For Supabase users
       // In a real implementation, you would use Supabase Functions
       // to securely delete a user account server-side
       
