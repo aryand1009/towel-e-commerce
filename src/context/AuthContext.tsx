@@ -1,9 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, AuthContextType } from '@/types/auth';
-import { supabase } from '@/integrations/supabase/client';
-import { Profile } from '@/types/database';
-import { getUserSession, saveUserSession, clearUserSession } from '@/services/userService';
+import { 
+  getUserByCredentials, 
+  saveUserToDatabase, 
+  saveUserSession, 
+  getUserSession, 
+  clearUserSession,
+  deleteUserFromDatabase
+} from '@/services/userService';
 
 // Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -11,138 +16,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load user on mount and setup listener for auth changes
+  // Check for existing user session on load
   useEffect(() => {
-    // Check for local storage session first (for admin)
-    const localUser = getUserSession();
-    if (localUser) {
-      setUser(localUser);
+    const savedUser = getUserSession();
+    if (savedUser) {
+      setUser(savedUser);
       setIsAuthenticated(true);
-      setIsLoading(false);
-      return;
     }
-
-    // Check Supabase session
-    const checkSession = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Get current session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          // Get user profile data
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          // Set user state with combined auth and profile data
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            name: profile?.name || session.user.email!.split('@')[0],
-            phone: profile?.phone || undefined,
-            role: (profile?.role as UserRole) || 'customer'
-          });
-          setIsAuthenticated(true);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-        setUser(null);
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Initialize session check
-    checkSession();
-
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          // Get user profile data
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          // Set user state with combined auth and profile data
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            name: profile?.name || session.user.email!.split('@')[0],
-            phone: profile?.phone || undefined,
-            role: (profile?.role as UserRole) || 'customer'
-          });
-          setIsAuthenticated(true);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      }
-    );
-
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   // Login function
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     try {
-      // For admin login using local storage
-      if (email === 'admin@dtex.com' && password === 'admin123' && role === 'admin') {
-        // Set admin user from local storage
-        const adminUser: User = {
-          id: 'admin-1',
-          email: 'admin@dtex.com',
-          role: 'admin',
-          name: 'Admin'
-        };
-        
-        // Save to session
-        saveUserSession(adminUser);
-        setUser(adminUser);
-        setIsAuthenticated(true);
-        return true;
-      }
-
-      // Regular Supabase login
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        console.error('Login error:', error.message);
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Simple validation
+      if (!email || !password) {
         return false;
       }
 
-      // If role is specified, verify it matches
-      if (role && data?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (profile?.role !== role) {
-          // Role doesn't match, sign out
-          await supabase.auth.signOut();
-          return false;
-        }
+      // Get user by credentials
+      const loggedInUser = getUserByCredentials(email, password);
+      
+      // Check if user exists
+      if (!loggedInUser) {
+        return false;
       }
+      
+      // Verify role if provided (for extra security)
+      if (role && loggedInUser.role !== role) {
+        return false;
+      }
+
+      // Save to state and localStorage for session
+      setUser(loggedInUser);
+      setIsAuthenticated(true);
+      saveUserSession(loggedInUser);
       
       return true;
     } catch (error) {
@@ -152,49 +63,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Signup function
-  const signup = async (
-    email: string,
-    name: string,
-    password: string,
-    role: UserRole,
-    phone?: string
-  ): Promise<boolean> => {
+  const signup = async (email: string, name: string, password: string, role: UserRole, phone?: string): Promise<boolean> => {
     try {
-      // Create the user account
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            role,
-            phone
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Signup error:', error.message);
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Simple validation
+      if (!email || !password || !name) {
         return false;
       }
 
-      // Update profile with additional data
-      if (data?.user) {
-        // Profile is automatically created by the trigger
-        // We can update it with any additional fields if needed
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ 
-            name,
-            phone,
-            role
-          })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
+      // Check if user already exists
+      const existingUser = getUserByCredentials(email, password);
+      if (existingUser) {
+        return false;
       }
+
+      // Save user to database with phone number
+      const newUser = saveUserToDatabase(email, password, role, name, phone);
+
+      // Save to state and localStorage for session
+      setUser(newUser);
+      setIsAuthenticated(true);
+      saveUserSession(newUser);
       
       return true;
     } catch (error) {
@@ -204,19 +95,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Logout function
-  const logout = async () => {
-    try {
-      // Clear local storage session (for admin)
-      clearUserSession();
-      
-      // Supabase logout
-      await supabase.auth.signOut();
-      
-      setUser(null);
-      setIsAuthenticated(false);
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+  const logout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    clearUserSession();
   };
 
   // Delete account function
@@ -224,25 +106,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       if (!user) return false;
       
-      // If admin user (from local storage)
-      if (user.id === 'admin-1') {
-        // Just clear the session
-        clearUserSession();
-        setUser(null);
-        setIsAuthenticated(false);
+      // Delete user from database
+      const success = deleteUserFromDatabase(user.email);
+      
+      if (success) {
+        // Clear user session
+        logout();
         return true;
       }
       
-      // For Supabase users
-      // In a real implementation, you would use Supabase Functions
-      // to securely delete a user account server-side
-      
-      // For now, we'll just sign out
-      await supabase.auth.signOut();
-      setUser(null);
-      setIsAuthenticated(false);
-      
-      return true;
+      return false;
     } catch (error) {
       console.error('Delete account error:', error);
       return false;
@@ -255,7 +128,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       user, 
       isAuthenticated, 
-      isLoading,
       isAdmin,
       login, 
       signup,

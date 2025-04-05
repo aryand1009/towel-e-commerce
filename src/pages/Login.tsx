@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +17,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { motion } from "framer-motion";
-import { getUserByCredentials } from '@/services/userService';
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -42,28 +42,6 @@ const Login = () => {
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
-      // Special case for admin login using local storage
-      if (values.email === 'admin@dtex.com' && values.password === 'admin123' && values.role === 'admin') {
-        const adminUser = getUserByCredentials(values.email, values.password);
-        
-        if (adminUser) {
-          // Manually set admin session
-          localStorage.setItem('user', JSON.stringify(adminUser));
-          
-          toast({
-            title: "Admin Login Successful",
-            description: "Welcome to the admin dashboard!",
-          });
-          
-          // Small delay to ensure toast is visible and localStorage is updated
-          setTimeout(() => {
-            navigate("/admin-dashboard");
-          }, 100);
-          return;
-        }
-      }
-      
-      // Regular login via Supabase
       const success = await login(values.email, values.password, values.role);
       
       if (success) {
@@ -72,14 +50,11 @@ const Login = () => {
           description: `Welcome back!`,
         });
         
-        // Small delay for toast visibility
-        setTimeout(() => {
-          if (values.role === "admin") {
-            navigate("/admin-dashboard");
-          } else {
-            navigate("/");
-          }
-        }, 100);
+        if (values.role === "admin") {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/");
+        }
       } else {
         toast({
           title: "Login Failed",
