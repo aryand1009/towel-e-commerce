@@ -11,7 +11,7 @@ export const createOrder = async (
     .rpc('create_order', {
       order_data: order,
       items_data: orderItems
-    } as any); // Use type assertion for the entire RPC parameter object
+    } as unknown as Record<string, any>); // Type assertion using unknown as intermediate step
 
   if (error) {
     console.error('Error creating order:', error);
