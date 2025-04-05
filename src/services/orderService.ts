@@ -9,9 +9,9 @@ export const createOrder = async (
   // Start a Postgres transaction to ensure all operations succeed or fail together
   const { data, error } = await supabase
     .rpc('create_order', {
-      order_data: order as any,
-      items_data: orderItems as any
-    });
+      order_data: order,
+      items_data: orderItems
+    } as any); // Use type assertion for the entire RPC parameter object
 
   if (error) {
     console.error('Error creating order:', error);
