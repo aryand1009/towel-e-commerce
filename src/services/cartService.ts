@@ -18,7 +18,7 @@ export const getCartItems = async (userId: string): Promise<Cart[]> => {
     return [];
   }
   
-  return data || [];
+  return data as Cart[] || [];
 };
 
 export const addToCart = async (cartItem: CartInsert): Promise<Cart | null> => {
@@ -34,8 +34,8 @@ export const addToCart = async (cartItem: CartInsert): Promise<Cart | null> => {
     // Update quantity if item exists
     const { data, error } = await supabase
       .from('cart')
-      .update({ quantity: existing.quantity + cartItem.quantity })
-      .eq('id', existing.id)
+      .update({ quantity: (existing as any).quantity + cartItem.quantity })
+      .eq('id', (existing as any).id)
       .select()
       .single();
     
@@ -44,12 +44,12 @@ export const addToCart = async (cartItem: CartInsert): Promise<Cart | null> => {
       return null;
     }
     
-    return data;
+    return data as Cart;
   } else {
     // Insert new item if it doesn't exist
     const { data, error } = await supabase
       .from('cart')
-      .insert([cartItem])
+      .insert([cartItem as any])
       .select()
       .single();
     
@@ -58,7 +58,7 @@ export const addToCart = async (cartItem: CartInsert): Promise<Cart | null> => {
       return null;
     }
     
-    return data;
+    return data as Cart;
   }
 };
 
@@ -68,7 +68,7 @@ export const updateCartItemQuantity = async (
 ): Promise<Cart | null> => {
   const { data, error } = await supabase
     .from('cart')
-    .update({ quantity })
+    .update({ quantity } as any)
     .eq('id', cartItemId)
     .select()
     .single();
@@ -78,7 +78,7 @@ export const updateCartItemQuantity = async (
     return null;
   }
   
-  return data;
+  return data as Cart;
 };
 
 export const removeFromCart = async (cartItemId: string): Promise<boolean> => {

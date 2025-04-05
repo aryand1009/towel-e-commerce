@@ -152,6 +152,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Update profile with additional data
       if (data?.user) {
+        // Profile is automatically created by the trigger
+        // We can update it with any additional fields if needed
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ 

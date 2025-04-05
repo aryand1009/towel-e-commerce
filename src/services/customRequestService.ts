@@ -1,13 +1,13 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { CustomRequest, CustomRequestInsert } from '@/types/database';
+import { CustomRequest, CustomRequestInsert, RequestStatus } from '@/types/database';
 
 export const createCustomRequest = async (
   request: CustomRequestInsert
 ): Promise<CustomRequest | null> => {
   const { data, error } = await supabase
     .from('custom_requests')
-    .insert([request])
+    .insert([request as any])
     .select()
     .single();
   
@@ -16,7 +16,7 @@ export const createCustomRequest = async (
     return null;
   }
   
-  return data;
+  return data as CustomRequest;
 };
 
 export const getUserCustomRequests = async (
@@ -33,7 +33,7 @@ export const getUserCustomRequests = async (
     return [];
   }
   
-  return data || [];
+  return data as CustomRequest[] || [];
 };
 
 export const getAllCustomRequests = async (): Promise<CustomRequest[]> => {
@@ -47,7 +47,7 @@ export const getAllCustomRequests = async (): Promise<CustomRequest[]> => {
     return [];
   }
   
-  return data || [];
+  return data as CustomRequest[] || [];
 };
 
 export const approveCustomRequest = async (
@@ -57,10 +57,10 @@ export const approveCustomRequest = async (
   const { data, error } = await supabase
     .from('custom_requests')
     .update({
-      status: 'approved',
+      status: 'approved' as RequestStatus,
       completion_time: completionTime,
       updated_at: new Date().toISOString()
-    })
+    } as any)
     .eq('id', requestId)
     .select()
     .single();
@@ -70,7 +70,7 @@ export const approveCustomRequest = async (
     return null;
   }
   
-  return data;
+  return data as CustomRequest;
 };
 
 export const rejectCustomRequest = async (
@@ -80,10 +80,10 @@ export const rejectCustomRequest = async (
   const { data, error } = await supabase
     .from('custom_requests')
     .update({
-      status: 'rejected',
+      status: 'rejected' as RequestStatus,
       rejection_reason: rejectionReason,
       updated_at: new Date().toISOString()
-    })
+    } as any)
     .eq('id', requestId)
     .select()
     .single();
@@ -93,5 +93,5 @@ export const rejectCustomRequest = async (
     return null;
   }
   
-  return data;
+  return data as CustomRequest;
 };

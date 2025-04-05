@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Order, OrderInsert, OrderItem, OrderItemInsert } from '@/types/database';
+import { Order, OrderInsert, OrderItem, OrderItemInsert, OrderStatus } from '@/types/database';
 
 export const createOrder = async (
   order: OrderInsert,
@@ -11,7 +11,7 @@ export const createOrder = async (
     .rpc('create_order', {
       order_data: order,
       items_data: orderItems
-    });
+    } as any);
 
   if (error) {
     console.error('Error creating order:', error);
@@ -20,7 +20,7 @@ export const createOrder = async (
     // We'll create the order first
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
-      .insert([order])
+      .insert([order as any])
       .select()
       .single();
     
@@ -32,22 +32,22 @@ export const createOrder = async (
     // Then create the order items
     const orderItemsWithOrderId = orderItems.map(item => ({
       ...item,
-      order_id: orderData.id
+      order_id: (orderData as any).id
     }));
     
     const { error: itemsError } = await supabase
       .from('order_items')
-      .insert(orderItemsWithOrderId);
+      .insert(orderItemsWithOrderId as any);
     
     if (itemsError) {
       console.error('Error creating order items manually:', itemsError);
       return null;
     }
     
-    return orderData;
+    return orderData as Order;
   }
   
-  return data;
+  return data as Order;
 };
 
 export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
@@ -62,7 +62,7 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
     return [];
   }
   
-  return data || [];
+  return data as Order[] || [];
 };
 
 export const getOrderDetails = async (orderId: string): Promise<{order: Order | null, items: OrderItem[]}> => {
@@ -86,19 +86,19 @@ export const getOrderDetails = async (orderId: string): Promise<{order: Order | 
   
   if (itemsError) {
     console.error(`Error fetching items for order ${orderId}:`, itemsError);
-    return { order, items: [] };
+    return { order: order as Order, items: [] };
   }
   
-  return { order, items: items || [] };
+  return { order: order as Order, items: items as OrderItem[] || [] };
 };
 
 export const updateOrderStatus = async (
   orderId: string,
-  status: 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
+  status: OrderStatus
 ): Promise<Order | null> => {
   const { data, error } = await supabase
     .from('orders')
-    .update({ status })
+    .update({ status } as any)
     .eq('id', orderId)
     .select()
     .single();
@@ -108,7 +108,7 @@ export const updateOrderStatus = async (
     return null;
   }
   
-  return data;
+  return data as Order;
 };
 
 export const getAllOrders = async (): Promise<Order[]> => {
@@ -122,5 +122,5 @@ export const getAllOrders = async (): Promise<Order[]> => {
     return [];
   }
   
-  return data || [];
+  return data as Order[] || [];
 };

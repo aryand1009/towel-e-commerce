@@ -12,7 +12,7 @@ export const getTowels = async (): Promise<Towel[]> => {
     return [];
   }
   
-  return data || [];
+  return data as Towel[] || [];
 };
 
 export const getTowelById = async (id: string): Promise<Towel | null> => {
@@ -27,13 +27,13 @@ export const getTowelById = async (id: string): Promise<Towel | null> => {
     return null;
   }
   
-  return data;
+  return data as Towel;
 };
 
 export const createTowel = async (towel: TowelInsert): Promise<Towel | null> => {
   const { data, error } = await supabase
     .from('towels')
-    .insert([towel])
+    .insert([towel as any])
     .select()
     .single();
   
@@ -42,13 +42,13 @@ export const createTowel = async (towel: TowelInsert): Promise<Towel | null> => 
     return null;
   }
   
-  return data;
+  return data as Towel;
 };
 
 export const updateTowel = async (id: string, towel: Partial<TowelInsert>): Promise<Towel | null> => {
   const { data, error } = await supabase
     .from('towels')
-    .update(towel)
+    .update(towel as any)
     .eq('id', id)
     .select()
     .single();
@@ -58,7 +58,7 @@ export const updateTowel = async (id: string, towel: Partial<TowelInsert>): Prom
     return null;
   }
   
-  return data;
+  return data as Towel;
 };
 
 export const deleteTowel = async (id: string): Promise<boolean> => {
