@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -56,7 +55,10 @@ const Login = () => {
             description: "Welcome to the admin dashboard!",
           });
           
-          navigate("/admin-dashboard");
+          // Small delay to ensure toast is visible and localStorage is updated
+          setTimeout(() => {
+            navigate("/admin-dashboard");
+          }, 100);
           return;
         }
       }
@@ -70,11 +72,14 @@ const Login = () => {
           description: `Welcome back!`,
         });
         
-        if (values.role === "admin") {
-          navigate("/admin-dashboard");
-        } else {
-          navigate("/");
-        }
+        // Small delay for toast visibility
+        setTimeout(() => {
+          if (values.role === "admin") {
+            navigate("/admin-dashboard");
+          } else {
+            navigate("/");
+          }
+        }, 100);
       } else {
         toast({
           title: "Login Failed",
