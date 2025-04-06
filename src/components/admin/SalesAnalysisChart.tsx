@@ -22,13 +22,13 @@ interface SalesAnalysisChartProps {
 }
 
 const SalesAnalysisChart: React.FC<SalesAnalysisChartProps> = ({ salesData }) => {
-  // Calculate total sales for percentage
-  const totalSales = salesData.reduce((sum, item) => sum + item.value, 0);
+  // Calculate total items sold for percentage
+  const totalItems = salesData.reduce((sum, item) => sum + item.value, 0);
   
   // Add percentage to formatted data for label
   const formattedData = salesData.map(item => ({
     ...item,
-    percentage: totalSales > 0 ? ((item.value / totalSales) * 100).toFixed(1) : 0
+    percentage: totalItems > 0 ? ((item.value / totalItems) * 100).toFixed(1) : 0
   }));
   
   // Custom label renderer
@@ -67,7 +67,7 @@ const SalesAnalysisChart: React.FC<SalesAnalysisChartProps> = ({ salesData }) =>
     <div className="glass-panel p-6 rounded-lg">
       <h2 className="text-xl font-medium mb-4">Sales Analysis</h2>
       <div className="h-[300px]">
-        {formattedData.length > 0 && totalSales > 0 ? (
+        {formattedData.length > 0 && totalItems > 0 ? (
           <ChartContainer className="w-full" config={{
             sales: { theme: { light: "#0088FE", dark: "#0088FE" } },
           }}>
@@ -97,12 +97,12 @@ const SalesAnalysisChart: React.FC<SalesAnalysisChartProps> = ({ salesData }) =>
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0];
-                      const value = typeof data.value === 'number' ? data.value.toFixed(2) : data.value;
+                      const value = typeof data.value === 'number' ? data.value : data.value;
                       return (
                         <div className="bg-white dark:bg-slate-900 p-2 rounded shadow border">
                           <p className="font-medium">{data.name}</p>
-                          <p className="text-sm">₹{value}</p>
-                          <p className="text-xs">{data.payload.percentage}% of sales</p>
+                          <p className="text-sm">{value} items</p>
+                          <p className="text-xs">{data.payload.percentage}% of total items</p>
                         </div>
                       );
                     }

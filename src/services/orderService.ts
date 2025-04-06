@@ -75,18 +75,18 @@ export const syncSalesDataWithOrders = (): void => {
     return;
   }
   
-  // Recalculate sales data from scratch based on existing orders
+  // Recalculate sales data based on quantity of items sold, not price
   const salesData: SalesData = {};
   
   orders.forEach(order => {
     order.items.forEach(item => {
-      // Use the item's name or type for category instead of "category" field
+      // Use the item's name or type for category
       const category = item.name || item.type || 'Other';
       if (!salesData[category]) {
         salesData[category] = 0;
       }
-      // Add to the sales data using price * quantity
-      salesData[category] += item.price * item.quantity;
+      // Count the quantity of items sold, regardless of price
+      salesData[category] += item.quantity || 1;
     });
   });
   
