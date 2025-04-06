@@ -32,22 +32,19 @@ export const saveOrders = (orders: Order[]): void => {
   // If no orders left, clear sales data
   if (orders.length === 0) {
     clearSalesData();
+  } else {
+    // Update sales data based on all current orders
+    syncSalesDataWithOrders();
   }
 };
 
 // Delete an order and update sales data
 export const deleteOrder = (orderId: string): void => {
   const orders = getAllOrders();
-  const orderToDelete = orders.find(order => order.id === orderId);
-  
-  if (!orderToDelete) return;
-  
-  // Remove from orders
   const updatedOrders = orders.filter(order => order.id !== orderId);
   saveOrders(updatedOrders);
   
-  // Update sales data
-  updateSalesDataAfterDeletion(orderToDelete);
+  // Sales data will be updated in saveOrders
 };
 
 // Update order status
@@ -61,31 +58,6 @@ export const updateOrderStatus = (orderId: string, newStatus: string): void => {
   });
   
   saveOrders(updatedOrders);
-};
-
-// Update sales data when an order is deleted
-const updateSalesDataAfterDeletion = (deletedOrder: Order): void => {
-  // Get current sales data
-  const savedSalesData = localStorage.getItem('salesData');
-  if (!savedSalesData) return;
-  
-  const salesData: SalesData = JSON.parse(savedSalesData);
-  
-  // Subtract the deleted order items from sales data
-  deletedOrder.items.forEach(item => {
-    const category = item.category || 'Other';
-    if (salesData[category]) {
-      salesData[category] -= item.price * item.quantity;
-      
-      // If category value drops to zero or below, remove it
-      if (salesData[category] <= 0) {
-        delete salesData[category];
-      }
-    }
-  });
-  
-  // Save updated sales data
-  localStorage.setItem('salesData', JSON.stringify(salesData));
 };
 
 // Clear all sales data
@@ -108,14 +80,25 @@ export const syncSalesDataWithOrders = (): void => {
   
   orders.forEach(order => {
     order.items.forEach(item => {
-      const category = item.category || 'Other';
+      // Use the item's name or type for category instead of "category" field
+      const category = item.name || item.type || 'Other';
       if (!salesData[category]) {
         salesData[category] = 0;
       }
+      // Add to the sales data using price * quantity
       salesData[category] += item.price * item.quantity;
     });
   });
   
   // Save updated sales data
   localStorage.setItem('salesData', JSON.stringify(salesData));
+};
+
+// Add a new order and update sales data
+export const addOrder = (order: Order): void => {
+  const orders = getAllOrders();
+  orders.push(order);
+  saveOrders(orders);
+  
+  // Sales data will be updated in saveOrders
 };

@@ -9,45 +9,109 @@ import {
   ChartLegendContent 
 } from "@/components/ui/chart";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A172F7', '#FF6B6B'];
+// Vibrant color palette for better distinction
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A172F7', '#FF6B6B', '#36A2EB', '#4BC0C0', '#9966FF', '#FF9F40'];
+
+interface SalesDataItem {
+  name: string;
+  value: number;
+}
 
 interface SalesAnalysisChartProps {
-  salesData: Array<{
-    name: string;
-    value: number;
-  }>;
+  salesData: SalesDataItem[];
 }
 
 const SalesAnalysisChart: React.FC<SalesAnalysisChartProps> = ({ salesData }) => {
+  // Calculate total sales for percentage
+  const totalSales = salesData.reduce((sum, item) => sum + item.value, 0);
+  
+  // Add percentage to formatted data for label
+  const formattedData = salesData.map(item => ({
+    ...item,
+    percentage: totalSales > 0 ? ((item.value / totalSales) * 100).toFixed(1) : 0
+  }));
+  
+  // Custom label renderer
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    name,
+    percentage
+  }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    if (Number(percentage) < 5) return null; // Don't show labels for small segments
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#fff"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize={12}
+        fontWeight={500}
+      >
+        {`${name}: ${percentage}%`}
+      </text>
+    );
+  };
+
   return (
     <div className="glass-panel p-6 rounded-lg">
       <h2 className="text-xl font-medium mb-4">Sales Analysis</h2>
       <div className="h-[300px]">
-        {salesData.length > 0 ? (
+        {formattedData.length > 0 && totalSales > 0 ? (
           <ChartContainer className="w-full" config={{
             sales: { theme: { light: "#0088FE", dark: "#0088FE" } },
           }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={salesData}
+                  data={formattedData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
                   outerRadius={120}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={renderCustomizedLabel}
+                  nameKey="name"
                 >
-                  {salesData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {formattedData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      stroke="#fff"
+                      strokeWidth={1}
+                    />
                   ))}
                 </Pie>
                 <ChartTooltip 
-                  content={<ChartTooltipContent />} 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0];
+                      return (
+                        <div className="bg-white dark:bg-slate-900 p-2 rounded shadow border">
+                          <p className="font-medium">{data.name}</p>
+                          <p className="text-sm">₹{data.value.toFixed(2)}</p>
+                          <p className="text-xs">{data.payload.percentage}% of sales</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                 />
                 <Legend 
-                  content={<ChartLegendContent />} 
+                  formatter={(value, entry, index) => {
+                    return `${value}: ${formattedData[index]?.percentage}%`;
+                  }}
                   layout="horizontal" 
                   verticalAlign="bottom" 
                   align="center" 

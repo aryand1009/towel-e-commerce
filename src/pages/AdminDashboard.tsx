@@ -38,7 +38,7 @@ const AdminDashboard = () => {
   }, [isAdmin, navigate]);
 
   useEffect(() => {
-    // Synchronize sales data with orders first
+    // First sync sales data with current orders to ensure accuracy
     syncSalesDataWithOrders();
     
     const loadData = () => {
@@ -69,11 +69,21 @@ const AdminDashboard = () => {
     
     loadData();
     
-    // Add event listener to detect changes in localStorage
-    window.addEventListener('storage', loadData);
+    // Add event listener to detect changes in localStorage from other components
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'orders' || e.key === 'salesData') {
+        loadData();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also set up a regular refresh interval to catch any changes
+    const intervalId = setInterval(loadData, 2000);
     
     return () => {
-      window.removeEventListener('storage', loadData);
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
     };
   }, []);
 
