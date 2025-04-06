@@ -97,10 +97,11 @@ const SalesAnalysisChart: React.FC<SalesAnalysisChartProps> = ({ salesData }) =>
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0];
+                      const value = typeof data.value === 'number' ? data.value.toFixed(2) : data.value;
                       return (
                         <div className="bg-white dark:bg-slate-900 p-2 rounded shadow border">
                           <p className="font-medium">{data.name}</p>
-                          <p className="text-sm">₹{data.value.toFixed(2)}</p>
+                          <p className="text-sm">₹{value}</p>
                           <p className="text-xs">{data.payload.percentage}% of sales</p>
                         </div>
                       );
