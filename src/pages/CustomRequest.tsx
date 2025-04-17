@@ -182,7 +182,7 @@ const CustomRequest = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="budget">Estimated Budget (USD)</Label>
+                  <Label htmlFor="budget">Estimated Budget (INR)</Label>
                   <Input 
                     id="budget"
                     name="budget"
@@ -197,7 +197,7 @@ const CustomRequest = () => {
               </div>
               
               <div>
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <Input 
                   id="phone"
                   name="phone"
