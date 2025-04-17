@@ -160,10 +160,10 @@ const Index = () => {
               </p>
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-towel-accent/50 flex items-center justify-center font-semibold text-towel-dark mr-3">
-                  JD
+                  SJ
                 </div>
                 <div>
-                  <h4 className="font-medium">Jane Doe</h4>
+                  <h4 className="font-medium">Samarth Jadhav</h4>
                   <p className="text-sm text-towel-gray">Verified Customer</p>
                 </div>
               </div>
@@ -189,10 +189,10 @@ const Index = () => {
               </p>
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-towel-accent/50 flex items-center justify-center font-semibold text-towel-dark mr-3">
-                  JS
+                  DB
                 </div>
                 <div>
-                  <h4 className="font-medium">John Smith</h4>
+                  <h4 className="font-medium">Dhiraj Battul</h4>
                   <p className="text-sm text-towel-gray">Verified Customer</p>
                 </div>
               </div>
@@ -214,14 +214,14 @@ const Index = () => {
                 ))}
               </div>
               <p className="mb-4 italic text-towel-gray">
-                "The custom design service is fantastic! I ordered personalized beach towels for my family, and they turned out beautiful. Fast shipping too!"
+                "कस्टम डिज़ाइन सेवा शानदार है! मैंने अपने परिवार के लिए पर्सनलाइज़्ड टॉवल्स मंगवाए, और वे बहुत सुंदर निकले। शिपिंग भी बहुत तेज़ थी!"
               </p>
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-towel-accent/50 flex items-center justify-center font-semibold text-towel-dark mr-3">
-                  EJ
+                    YB
                 </div>
                 <div>
-                  <h4 className="font-medium">Emily Johnson</h4>
+                  <h4 className="font-medium">Yash Bajaj</h4>
                   <p className="text-sm text-towel-gray">Verified Customer</p>
                 </div>
               </div>
