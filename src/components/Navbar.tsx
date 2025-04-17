@@ -98,8 +98,6 @@ const Navbar = () => {
                 </Link>
               )}
               
-              {/* Removed the Home button for admin */}
-              
               <UserMenu user={user} onLogout={logout} />
               
               {!isAdmin && (

@@ -1,4 +1,3 @@
-
 import { ShoppingBag, X, Trash2, Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';

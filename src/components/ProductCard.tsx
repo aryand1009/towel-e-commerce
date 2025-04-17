@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Heart, ShoppingCart, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -74,7 +73,6 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Product image */}
       <div className="relative overflow-hidden h-72">
         <img 
           src={image} 
@@ -83,7 +81,6 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
           style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }}
         />
         
-        {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
           {isNew && (
             <span className="px-3 py-1 rounded-full bg-towel-blue text-white text-xs font-medium">
@@ -97,7 +94,6 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
           )}
         </div>
         
-        {/* Quick actions */}
         <div 
           className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 transition-all duration-300"
           style={{ 
@@ -126,7 +122,6 @@ const ProductCard = ({ id, name, price, image, category, isNew, isBestseller }: 
         </div>
       </div>
       
-      {/* Product info */}
       <div className="p-4">
         <span className="text-xs text-towel-gray font-medium uppercase">{category}</span>
         <h3 className="font-medium text-lg mt-1 mb-2">{name}</h3>
