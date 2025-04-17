@@ -384,7 +384,7 @@ const CustomRequests = () => {
                 
                 <div>
                   <h3 className="text-sm font-medium text-towel-gray">Budget per Item</h3>
-                  <p className="mt-1">${selectedRequest.budget.toFixed(2)}</p>
+                  <p className="mt-1">₹{selectedRequest.budget.toFixed(2)}</p>
                 </div>
               </div>
               
