@@ -1,10 +1,8 @@
-
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import ProductGrid from '../components/ProductGrid';
-import FeaturedSection from '../components/FeaturedSection';
 import Footer from '../components/Footer';
 import { Sparkles, Truck, ShieldCheck, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -229,8 +227,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-      
-      <FeaturedSection />
       
       <Footer />
     </div>
