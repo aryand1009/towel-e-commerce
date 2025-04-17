@@ -286,7 +286,7 @@ const CustomRequests = () => {
                   <TableCell>{request.userName}</TableCell>
                   <TableCell>{new Date(request.date).toLocaleDateString()}</TableCell>
                   <TableCell>{request.quantity}</TableCell>
-                  <TableCell>${request.budget.toFixed(2)}</TableCell>
+                  <TableCell>₹{request.budget.toFixed(2)}</TableCell>
                   <TableCell>
                     <span 
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
