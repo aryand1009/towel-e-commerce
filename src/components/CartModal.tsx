@@ -1,9 +1,13 @@
 
-import { ShoppingBag, X, Trash2 } from 'lucide-react';
+import { ShoppingBag, X, Trash2, Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/context/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { addOrder } from '@/services/orderService';
+import { useState } from 'react';
 
 export interface CartItem {
   id: string;
@@ -18,14 +22,68 @@ interface CartModalProps {
   onClose: () => void;
   cartItems: CartItem[];
   removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
 }
 
-const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProps) => {
+const CartModal = ({ 
+  isOpen, 
+  onClose, 
+  cartItems, 
+  removeFromCart,
+  updateQuantity 
+}: CartModalProps) => {
   // Calculate subtotal
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Track inputs to handle direct quantity changes
+  const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
+  
+  const handleQuantityChange = (id: string, value: string) => {
+    setQuantityInputs(prev => ({ ...prev, [id]: value }));
+  }
+  
+  const handleQuantityBlur = (id: string) => {
+    const value = quantityInputs[id];
+    if (value) {
+      const quantity = parseInt(value, 10);
+      // Only update if it's a valid number
+      if (!isNaN(quantity) && quantity > 0) {
+        updateQuantity(id, quantity);
+      }
+    }
+    
+    // Reset the input to match the actual quantity in the cart
+    const currentItem = cartItems.find(item => item.id === id);
+    if (currentItem) {
+      setQuantityInputs(prev => ({ ...prev, [id]: currentItem.quantity.toString() }));
+    }
+  }
+  
+  const handleQuantityKeyDown = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleQuantityBlur(id);
+    }
+  }
+  
+  const incrementQuantity = (id: string) => {
+    const item = cartItems.find(item => item.id === id);
+    if (item) {
+      updateQuantity(id, item.quantity + 1);
+      setQuantityInputs(prev => ({ ...prev, [id]: (item.quantity + 1).toString() }));
+    }
+  }
+  
+  const decrementQuantity = (id: string) => {
+    const item = cartItems.find(item => item.id === id);
+    if (item && item.quantity > 1) {
+      updateQuantity(id, item.quantity - 1);
+      setQuantityInputs(prev => ({ ...prev, [id]: (item.quantity - 1).toString() }));
+    }
+  }
   
   const handleCheckout = () => {
     if (cartItems.length === 0) {
@@ -60,23 +118,8 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
       userEmail: user.email
     };
     
-    // Get existing orders or initialize empty array
-    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    existingOrders.push(order);
-    localStorage.setItem('orders', JSON.stringify(existingOrders));
-    
-    // Update sales data in localStorage for admin dashboard
-    const salesData = JSON.parse(localStorage.getItem('salesData') || '{}');
-    
-    cartItems.forEach(item => {
-      if (salesData[item.name]) {
-        salesData[item.name] += item.quantity;
-      } else {
-        salesData[item.name] = item.quantity;
-      }
-    });
-    
-    localStorage.setItem('salesData', JSON.stringify(salesData));
+    // Use the orderService to add the order
+    addOrder(order);
     
     // Clear cart and show success message
     localStorage.setItem('cartItems', '[]');
@@ -158,7 +201,39 @@ const CartModal = ({ isOpen, onClose, cartItems, removeFromCart }: CartModalProp
                       {/* Product details */}
                       <div className="flex-1">
                         <h3 className="font-medium text-towel-dark">{item.name}</h3>
-                        <p className="text-gray-500 text-sm">Quantity: {item.quantity}</p>
+                        
+                        {/* Quantity selector */}
+                        <div className="flex items-center mt-2 mb-1">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-l-md rounded-r-none border-r-0"
+                            onClick={() => decrementQuantity(item.id)}
+                            disabled={item.quantity <= 1}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            value={quantityInputs[item.id] === undefined ? item.quantity : quantityInputs[item.id]}
+                            onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                            onBlur={() => handleQuantityBlur(item.id)}
+                            onKeyDown={(e) => handleQuantityKeyDown(e, item.id)}
+                            className="h-8 w-12 text-center rounded-none border-x-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-r-md rounded-l-none border-l-0"
+                            onClick={() => incrementQuantity(item.id)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        
                         <p className="font-semibold mt-1">₹{item.price.toFixed(2)}</p>
                       </div>
                       

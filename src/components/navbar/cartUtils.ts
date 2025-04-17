@@ -68,3 +68,26 @@ export const removeItemFromCart = (id: string, currentItems: CartItem[]): CartIt
   saveCartToStorage(updatedItems);
   return updatedItems;
 };
+
+// Update item quantity in cart
+export const updateItemQuantity = (
+  id: string,
+  quantity: number,
+  currentItems: CartItem[]
+): CartItem[] => {
+  // Don't allow quantities less than 1
+  if (quantity < 1) {
+    return currentItems;
+  }
+  
+  const updatedItems = currentItems.map(item => {
+    if (item.id === id) {
+      return { ...item, quantity };
+    }
+    return item;
+  });
+  
+  saveCartToStorage(updatedItems);
+  return updatedItems;
+};
+

@@ -10,7 +10,13 @@ import MobileMenu from './navbar/MobileMenu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { loadCartFromStorage, removeItemFromCart, addItemToCart, CartItem } from './navbar/cartUtils';
+import { 
+  loadCartFromStorage, 
+  removeItemFromCart, 
+  addItemToCart, 
+  updateItemQuantity,
+  CartItem 
+} from './navbar/cartUtils';
 
 // Define CartItem type for global access
 declare global {
@@ -60,6 +66,11 @@ const Navbar = () => {
   // Remove item from cart
   const removeFromCart = (id: string) => {
     setCartItems(prevItems => removeItemFromCart(id, prevItems));
+  };
+
+  // Update quantity of an item in the cart
+  const updateQuantity = (id: string, quantity: number) => {
+    setCartItems(prevItems => updateItemQuantity(id, quantity, prevItems));
   };
 
   // Calculate total items in cart
@@ -118,6 +129,7 @@ const Navbar = () => {
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
         removeFromCart={removeFromCart}
+        updateQuantity={updateQuantity}
       />
     </header>
   );
